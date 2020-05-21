@@ -118,7 +118,6 @@ dev = all
 
 # change some python pkg versions
 sed -i -e "s,Babel.*,Babel,g" $ODIR/odoo/requirements.txt
-sed -i -e "s,gevent==1.3.4,gevent<1.4,g" $ODIR/odoo/requirements.txt
 sed -i -e "s,html2text.*,html2text,g" $ODIR/odoo/requirements.txt
 sed -i -e "s,libsass.*,libsass,g" $ODIR/odoo/requirements.txt
 sed -i -e "s,pytz.*,pytz,g" $ODIR/odoo/requirements.txt
