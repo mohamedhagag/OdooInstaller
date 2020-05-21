@@ -7,6 +7,15 @@ export SFX=$(echo $VER | awk -F\. '{print $1}')	 # Odoo folder suffix version wi
 export BWS="$HOME/workspace"		 # Base workspace folder default ~/workspace
 export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
 
+# function to print a mgs, kill the script & exit
+die(){
+	export MSG=$1; export ERR=$2; 
+	echo "Error: $MSG" #error msg
+	[[ -n $ERR ]] && exit $ERR || exit 9
+}
+# check version
+echo $VER | grep '.0' || die "Version should have .0 like 12.0 not 12" 9999
+
 ##### DO Not change below this line
 echo -e "
 #############################################################
@@ -32,15 +41,7 @@ Press any key to continue or CTRL+C to exit :
 export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb"
 export OGH="http://github.com/odoo/odoo"
 
-# function to print a mgs, kill the script & exit
-die(){
-	export MSG=$1; export ERR=$2; 
-	echo "Error: $MSG" #error msg
-	[[ -n $ERR ]] && exit $ERR || exit 9
-}
 
-# check version
-echo $VER | grep '.0' || die "Version should have .0 like 12.0 not 12" 9999
 
 # only work on ubuntu
 lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems supported" 999
