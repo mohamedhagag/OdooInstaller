@@ -42,7 +42,6 @@ export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.
 export OGH="https://github.com/odoo/odoo"
 export REQ="https://github.com/odoo/odoo/blob/$VER/requirements.txt"
 export RQF=`mktemp`
-curl $REQ > $RQF
 
 
 # only work on ubuntu
@@ -58,7 +57,9 @@ cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>
 # install some deps
 sudo apt update && sudo apt -y dist-upgrade
 sudo apt install -y --no-install-recommends aptitude postgresql sassc node-less npm libxml2-dev \
-	libsasl2-dev libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} &
+ curl libsasl2-dev libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} &
+
+curl $REQ > $RQF
 
 # link a folder to avoid an error in pip install lxml
 sudo ln -s /usr/include/libxml2/libxml /usr/include/
