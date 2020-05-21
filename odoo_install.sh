@@ -1,5 +1,7 @@
 #!/bin/bash
+# you can set odoo version as 1st argument
 export VER=13.0		 # set odoo version - should work with any version after 11.0 - tested with 12 & 13
+[[ -n $1 ]] && export VER="$1"
 ### Config vars - you may change these - but defaults are good 
 export SFX=$(echo $VER | awk -F\. '{print $1}')	 # Odoo folder suffix version without ".0"
 export BWS="$HOME/workspace"		 # Base workspace folder default ~/workspace
@@ -13,6 +15,8 @@ echo -e "
 #-----------------------------------------------------------
 #  Caution: This script For development use only 
 #  Not for production use 
+#  You can set odoo version by calling $0 Version
+#  Like $0 14.0 to install odoo 14.0
 #  It will install Odoo v$VER
 #  In $BWS/Odoo_$SFX
 #  On success:
@@ -34,6 +38,9 @@ die(){
 	echo "Error: $MSG" #error msg
 	[[ -n $ERR ]] && exit $ERR || exit 9
 }
+
+# check version
+echo $VER | grep '.0' || die "Version should have .0 like 12.0 not 12" 9999
 
 # only work on ubuntu
 lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems supported" 999
