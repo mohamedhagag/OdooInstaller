@@ -39,8 +39,10 @@ Press any key to continue or CTRL+C to exit :
 " && read
 
 export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb"
-export OGH="http://github.com/odoo/odoo"
-
+export OGH="https://github.com/odoo/odoo"
+export REQ="https://github.com/odoo/odoo/blob/$VER/requirements.txt"
+export RQF=`mktemp`
+curl $REQ > $RQF
 
 
 # only work on ubuntu
@@ -56,17 +58,17 @@ cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>
 # install some deps
 sudo apt update && sudo apt -y dist-upgrade
 sudo apt install -y --no-install-recommends aptitude postgresql sassc node-less npm libxml2-dev \
-	libsasl2-dev libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv}
+	libsasl2-dev libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} &
 
 # link a folder to avoid an error in pip install lxml
 sudo ln -s /usr/include/libxml2/libxml /usr/include/
 
 # check if we have wkhtmltopdf or install it
 aptitude search wkhtmlto | grep ^i || (wget $WKURL && sudo apt -y install ./wkhtml*deb ) \
-	|| die "can not install wkhtml2pdf" 777
+	|| die "can not install wkhtml2pdf" 777 &
 
 # install compiler & dev tools
-sudo apt install -y gcc g++ make automake cmake autoconf build-essential
+sudo apt install -y gcc g++ make automake cmake autoconf build-essential || die "can not install dev deps" 444
 
 # apt-file will help you find which non-installed pkg can provide a file 
 # sudo apt -y install apt-file && sudo apt-file update
@@ -88,7 +90,7 @@ env | grep VIRTUAL || ( cd $ODIR && source $ODIR/bin/activate ) \
 # get odoo sources from github
 cd $ODIR 
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH \
-	|| die "can not download odoo sources" 45
+	|| die "can not download odoo sources" 45 &
 
 # create re/start script
 echo "#!/bin/bash
@@ -117,26 +119,26 @@ dev = all
 "> $ODIR/Odoo_$SFX.conf && mkdir -p $ODIR/my_adds
 
 # change some python pkg versions
-sed -i -e "s,Babel.*,Babel,g" $ODIR/odoo/requirements.txt
-sed -i -e "s,html2text.*,html2text,g" $ODIR/odoo/requirements.txt
-sed -i -e "s,libsass.*,libsass,g" $ODIR/odoo/requirements.txt
-sed -i -e "s,pytz.*,pytz,g" $ODIR/odoo/requirements.txt
-sed -i -e "s,psutil.*,psutil,g" $ODIR/odoo/requirements.txt
-sed -i -e "s,passlib.*,passlib,g" $ODIR/odoo/requirements.txt
-sed -i -e "s,reportlab.*,reportlab,g" $ODIR/odoo/requirements.txt
-sed -i -e "s,pillow.*,pillow,g" $ODIR/odoo/requirements.txt
-sed -i -e "s,Pillow.*,Pillow,g" $ODIR/odoo/requirements.txt
-sed -i -e "s,psycopg2.*,psycopg2-binary,g" $ODIR/odoo/requirements.txt
-sed -i -e "s,lxml.*,lxml,g" $ODIR/odoo/requirements.txt
-sed -i -e "s,num2.*,num2words,g" $ODIR/odoo/requirements.txt
-sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $ODIR/odoo/requirements.txt
+sed -i -e "s,Babel.*,Babel,g" $RQF
+sed -i -e "s,html2text.*,html2text,g" $RQF
+sed -i -e "s,libsass.*,libsass,g" $RQF
+sed -i -e "s,pytz.*,pytz,g" $RQF
+sed -i -e "s,psutil.*,psutil,g" $RQF
+sed -i -e "s,passlib.*,passlib,g" $RQF
+sed -i -e "s,reportlab.*,reportlab,g" $RQF
+sed -i -e "s,pillow.*,pillow,g" $RQF
+sed -i -e "s,Pillow.*,Pillow,g" $RQF
+sed -i -e "s,psycopg2.*,psycopg2-binary,g" $RQF
+sed -i -e "s,lxml.*,lxml,g" $RQF
+sed -i -e "s,num2.*,num2words,g" $RQF
+sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
 
 # install python pkgs
 cd $ODIR && source bin/activate
-while read line; do pip install "$line" ; done < $ODIR/odoo/requirements.txt
+while read line; do pip install "$line" ; done < $RQF
 
 # restore original req. file
-cd $ODIR/odoo && rm requirements.txt && git checkout requirements.txt
+cd $RQF
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL \
 && echo -e "
