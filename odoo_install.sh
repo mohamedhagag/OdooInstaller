@@ -61,7 +61,7 @@ aptitude search wkhtmlto | grep ^i || ( ( ls ./wkhtml*deb || wget $WKURL ) && su
 sudo apt update && sudo apt -y dist-upgrade
 sudo apt install -y --no-install-recommends aptitude postgresql sassc node-less npm libxml2-dev curl libsasl2-dev \
  libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
- build-essential || die "can not install deps" 11 &
+ build-essential || die "can not install deps" 11 
 
 curl $REQ > $RQF || die "can not get $REQ " 22
 
