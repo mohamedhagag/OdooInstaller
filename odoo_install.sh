@@ -38,14 +38,13 @@ echo -e "
 Press any key to continue or CTRL+C to exit :
 " && read && sudo ls >/dev/null
 
+# only work on ubuntu
+lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems supported" 999
+
 export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb"
 export OGH="https://github.com/odoo/odoo"
 export REQ="https://github.com/odoo/odoo/blob/$VER/requirements.txt"
 export RQF=`mktemp`
-
-
-# only work on ubuntu
-lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems supported" 999
 
 # create workspace dir
 mkdir -p $BWS && cd $BWS || die "Can not create $BWS folder" 888
