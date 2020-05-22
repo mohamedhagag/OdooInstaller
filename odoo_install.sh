@@ -55,7 +55,7 @@ mkdir -p $HOME/bin
 cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>~/.bashrc
 
 # check if we have wkhtmltopdf or install it
-aptitude search wkhtmlto | grep ^i || ( ( [[ -f ./wkhtml*deb ]] || wget $WKURL ) && sudo apt -y install ./wkhtml*deb ) \
+aptitude search wkhtmlto | grep ^i || ( ( ls ./wkhtml*deb || wget $WKURL ) && sudo apt -y install ./wkhtml*deb ) \
 	|| die "can not install wkhtml2pdf" 777 
 
 #upgrade & install some deps
