@@ -131,7 +131,9 @@ sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
 
 # install python pkgs
 cd $ODIR && source bin/activate
-while read line; do pip install "$line" ; done < $RQF
+while read line
+ do pip install "$line" &
+done < $RQF
 
 # restore original req. file
 cd $RQF
