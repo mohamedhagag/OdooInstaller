@@ -35,7 +35,7 @@ echo -e "
 #  - Odoo  will be running on http://localhost:80$SFX
 ############################################################
 
-Press any key to continue or CTRL+C to exit :
+Press Enter to continue or CTRL+C to exit :
 " && read && sudo ls >/dev/null
 
 # only work on ubuntu
@@ -114,7 +114,7 @@ dev = all
 "> $ODIR/Odoo_$SFX.conf && mkdir -p $ODIR/my_adds
 
 # change some python pkg versions
-sed -i -e "s,psycopg2,psycopg2-binary,g" $RQF
+sed -i -e "s,psycopg2.*,psycopg2-binary,g" $RQF
 sed -i -e "s,num2words.*,num2words,g" $RQF
 sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
 #sed -i -e "s,pytz.*,pytz,g" $RQF
