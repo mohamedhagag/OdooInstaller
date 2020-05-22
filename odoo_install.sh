@@ -23,7 +23,7 @@ echo -e "
 #  https://linkedin.com/in/mohamedhagag under GPL3 License
 #-----------------------------------------------------------
 #  Caution: This script For development use only 
-#  Not for production use 
+#  with ubuntu 19.10+ , Not for production use 
 #  You can set odoo version by calling $0 Version
 #  Like $0 14.0 to install odoo 14.0
 #  It will install Odoo v$VER
