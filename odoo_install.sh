@@ -114,19 +114,19 @@ dev = all
 "> $ODIR/Odoo_$SFX.conf && mkdir -p $ODIR/my_adds
 
 # change some python pkg versions
-sed -i -e "s,Babel.*,Babel,g" $RQF
-sed -i -e "s,html2text.*,html2text,g" $RQF
-sed -i -e "s,libsass.*,libsass,g" $RQF
-sed -i -e "s,pytz.*,pytz,g" $RQF
-sed -i -e "s,psutil.*,psutil,g" $RQF
-sed -i -e "s,passlib.*,passlib,g" $RQF
-sed -i -e "s,reportlab.*,reportlab,g" $RQF
-sed -i -e "s,pillow.*,pillow,g" $RQF
-sed -i -e "s,Pillow.*,Pillow,g" $RQF
-sed -i -e "s,psycopg2.*,psycopg2-binary,g" $RQF
-sed -i -e "s,lxml.*,lxml,g" $RQF
-sed -i -e "s,num2.*,num2words,g" $RQF
+sed -i -e "s,psycopg2,psycopg2-binary,g" $RQF
+sed -i -e "s,num2words.*,num2words,g" $RQF
 sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
+#sed -i -e "s,pytz.*,pytz,g" $RQF
+#sed -i -e "s,psutil.*,psutil,g" $RQF
+#sed -i -e "s,passlib.*,passlib,g" $RQF
+#sed -i -e "s,reportlab.*,reportlab,g" $RQF
+#sed -i -e "s,lxml.*,lxml,g" $RQF
+#sed -i -e "s,Babel.*,Babel,g" $RQF
+#sed -i -e "s,html2text.*,html2text,g" $RQF
+#sed -i -e "s,libsass.*,libsass,g" $RQF
+#sed -i -e "s,pillow.*,pillow,g" $RQF
+#sed -i -e "s,Pillow.*,Pillow,g" $RQF
 
 # install python pkgs
 cd $ODIR && source bin/activate
