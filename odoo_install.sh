@@ -54,25 +54,20 @@ mkdir -p $BWS && cd $BWS || die "Can not create $BWS folder" 888
 mkdir -p $HOME/bin 
 cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>~/.bashrc
 
-# install some deps
-sudo apt update && sudo apt -y dist-upgrade
-sudo apt install -y --no-install-recommends aptitude postgresql sassc node-less npm libxml2-dev \
- curl libsasl2-dev libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} &
+# check if we have wkhtmltopdf or install it
+aptitude search wkhtmlto | grep ^i || ( ( [[ -f ./wkhtml*deb ]] || wget $WKURL ) && sudo apt -y install ./wkhtml*deb ) \
+	|| die "can not install wkhtml2pdf" 777 
 
-curl $REQ > $RQF
+#upgrade & install some deps
+sudo apt update && sudo apt -y dist-upgrade
+sudo apt install -y --no-install-recommends aptitude postgresql sassc node-less npm libxml2-dev curl libsasl2-dev \
+ libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
+ build-essential || die "can not install deps" 11 &
+
+curl $REQ > $RQF || die "can not get $REQ " 22
 
 # link a folder to avoid an error in pip install lxml
 sudo ln -s /usr/include/libxml2/libxml /usr/include/
-
-# check if we have wkhtmltopdf or install it
-aptitude search wkhtmlto | grep ^i || (wget $WKURL && sudo apt -y install ./wkhtml*deb ) \
-	|| die "can not install wkhtml2pdf" 777 &
-
-# install compiler & dev tools
-sudo apt install -y gcc g++ make automake cmake autoconf build-essential || die "can not install dev deps" 444
-
-# apt-file will help you find which non-installed pkg can provide a file 
-# sudo apt -y install apt-file && sudo apt-file update
 
 # create postgres user for current $USER
 sudo su -l postgres -c "createuser -d $USER"
