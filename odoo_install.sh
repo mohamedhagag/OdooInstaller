@@ -36,7 +36,7 @@ echo -e "
 ############################################################
 
 Press any key to continue or CTRL+C to exit :
-" && read && sudo ls >/dev/nulll
+" && read && sudo ls >/dev/null
 
 export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb"
 export OGH="https://github.com/odoo/odoo"
