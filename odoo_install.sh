@@ -43,7 +43,7 @@ lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems suppor
 
 export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb"
 export OGH="https://github.com/odoo/odoo"
-export REQ="https://raw.githubusercontent.com/odoo/odoo/$VER/requirements.txt"
+export REQ="https://raw.githubusercontent.com/odoo/odoo/master/requirements.txt"
 export RQF=`mktemp`
 
 # create workspace dir
@@ -84,7 +84,7 @@ env | grep VIRTUAL || ( cd $ODIR && source $ODIR/bin/activate ) \
 
 # get odoo sources from github
 cd $ODIR 
-[[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH \
+[[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
 	|| die "can not download odoo sources" 45 &
 
 # create re/start script
