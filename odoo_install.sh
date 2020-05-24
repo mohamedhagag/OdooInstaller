@@ -54,36 +54,38 @@ mkdir -p $HOME/bin
 cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>~/.bashrc
 
 # check if we have wkhtmltopdf or install it
-aptitude search wkhtmlto | grep ^i || ( ( ls ./wkhtml*deb || wget $WKURL ) && sudo apt -y install ./wkhtml*deb ) \
+echo "Installing WKHTML2PDF"; aptitude search wkhtmlto | grep ^i &>/dev/null \
+  || ( ( ls ./wkhtml*deb &>/dev/null || wget $WKURL &>/dev/null ) && sudo apt -y install ./wkhtml*deb &>/dev/null ) \
 	|| die "can not install wkhtml2pdf" 777 
 
 #upgrade & install some deps
-sudo apt update && sudo apt -y dist-upgrade
+echo "Updating system ..."
+sudo apt update &>/dev/null && sudo apt -y dist-upgrade &>/dev/null
+echo "Installing Dependencies ..."
 sudo apt install -y --no-install-recommends aptitude postgresql sassc node-less npm libxml2-dev curl libsasl2-dev \
  libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
- build-essential || die "can not install deps" 11 
+ build-essential &>/dev/null || die "can not install deps" 11 
 
-curl $REQ > $RQF || die "can not get $REQ " 22
+curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
 # link a folder to avoid an error in pip install lxml
-sudo ln -s /usr/include/libxml2/libxml /usr/include/
+sudo ln -s /usr/include/libxml2/libxml /usr/include/ &>/dev/null
 
-# create postgres user for current $USER
+echo "Creating postgres user for current $USER"
 sudo su -l postgres -c "createuser -d $USER"
 
 # install rtlcss requored for RTL support in Odoo
-sudo npm install -g rtlcss
+echo "Installing rtlcss..."
+sudo npm install -g rtlcss &>/dev/null
 
 # create VirtualEnv and activate it
-[[ -d $ODIR ]] || ( virtualenv $ODIR && cd $ODIR && source $ODIR/bin/activate ) \
+echo "Creating venv $ODIR"
+[[ -d $ODIR ]] || ( virtualenv $ODIR &>/dev/null && cd $ODIR && source $ODIR/bin/activate ) \
 		|| die "can not create venv" 33
-
-# Ensure that venv is active or activate it or die );
-env | grep VIRTUAL || ( cd $ODIR && source $ODIR/bin/activate ) \
-	|| die "can not activate venv" 44
 
 # get odoo sources from github
 cd $ODIR 
+echo "Cloning odoo git $VER ..."
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
 	|| die "can not download odoo sources" 45 &
 
@@ -114,7 +116,7 @@ dev = all
 "> $ODIR/Odoo_$SFX.conf && mkdir -p $ODIR/my_adds
 
 # change some python pkg versions
-sed -i -e "s,psycopg2.*,psycopg2-binary,g" $RQF
+sed -i -e "s,psycopg2,psycopg2-binary,g" $RQF
 sed -i -e "s,num2words.*,num2words,g" $RQF
 sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
 #sed -i -e "s,pytz.*,pytz,g" $RQF
@@ -130,12 +132,10 @@ sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
 
 # install python pkgs
 cd $ODIR && source bin/activate
-while read line;  do pip install "$line"; done < $RQF
+while read line;  do echo -n "Installing $line : "; pip install "$line" &>/dev/null && echo OK || echo Failed; done < $RQF
 
-# restore original req. file
-cd $RQF
 
-[[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL \
+[[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>/dev/null \
 && echo -e "
 #############################################################
 #  Looks like everything went well.
