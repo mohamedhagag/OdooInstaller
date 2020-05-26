@@ -154,8 +154,8 @@ echo "Installing Python libraries:"
 cd $ODIR && source ./bin/activate
 while read line 
 	do 
-		echo -n " - Installing $LMSG : "
 		export LMSG=$(echo "$line" | awk '{print $1}')
+		echo -n " - Installing $LMSG : "
 		pip install "$line" &>/dev/null && sayok \
 		|| ( sayfail && die "$LMSG library install error" )
 done < $RQF
