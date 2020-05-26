@@ -9,11 +9,13 @@ export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
 
 ##################### Do Not make changes below this line #####################
 
-#Colors
+#Colors - ref: https://stackoverflow.com/a/5947802
 export RED='\033[0;31m'
 export GREEN='\033[0;32m'
+export BLUE='\033[0;34m'
 export LRED='\033[1;31m'
 export LGREEN='\033[1;32m'
+export LBLUE='\033[1;34m'
 export NC='\033[0m' # No Color
 
 # function to print a mgs, kill the script & exit
@@ -23,13 +25,13 @@ die(){
 	[[ -n $ERR ]] && exit $ERR || exit 9
 }
 
-sayok(){
-	echo -e "${LGREEN} OK ${NC}"
-}
+sayok(){echo -e "${LGREEN} OK ${NC}"}
+sayfail(){echo -e "${LRED} Failed ${NC}"}
+
 # check version
 echo $VER | grep '.0' || die "Version should have .0 like 12.0 not 12" 9999
 
-echo -e "
+echo -e "${LBLUE}
 #############################################################
 #  Welcome to Odoo installer script by Mohamed M. Hagag
 #  https://linkedin.com/in/mohamedhagag under GPL3 License
@@ -48,7 +50,7 @@ echo -e "
 ############################################################
 
 Press Enter to continue or CTRL+C to exit :
-" && read && sudo ls >/dev/null
+${NC}" && read && sudo ls >/dev/null
 
 # only work on ubuntu
 lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems supported" 999
@@ -146,13 +148,14 @@ sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
 echo "Installing Python libraries:"
 cd $ODIR && source ./bin/activate
 while read line; 
-	do echo -n " - Installing $line : "
-	pip install "$line" &>/dev/null && sayok || echo Failed
+	exort LMSG = $(echo "$line" | awk '{print $1}')
+	do echo -n " * Installing $LMSG : "
+	pip install "$line" &>/dev/null && sayok || ( sayfail && die "$LMSG library install error" )
 done < $RQF
 
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>/dev/null \
-&& echo -e "
+&& echo -e "${LGREEN}
 #############################################################
 #  Looks like everything went well.
 #  You should now:
@@ -164,8 +167,10 @@ done < $RQF
 #############################################################
 
 Good luck, ;) .
-" || echo -e "Something went wrong ...
+${NC}" || echo -e "${LRED}
+Something went wrong ...
 	Plz check the previous messages for errors
 	or try re-running the installation again.
-	You may delete $ODIR before restarting."
+	You may delete $ODIR before restarting.
+${NC}"
 
