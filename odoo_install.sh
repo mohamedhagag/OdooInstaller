@@ -147,10 +147,11 @@ sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
 
 echo "Installing Python libraries:"
 cd $ODIR && source ./bin/activate
-while read line; 
-	exort LMSG = $(echo "$line" | awk '{print $1}')
-	do echo -n " * Installing $LMSG : "
-	pip install "$line" &>/dev/null && sayok || ( sayfail && die "$LMSG library install error" )
+while read line 
+	do 
+		echo -n " * Installing $LMSG : "
+		exort LMSG = $(echo "$line" | awk '{print $1}')
+		pip install "$line" &>/dev/null && sayok || ( sayfail && die "$LMSG library install error" )
 done < $RQF
 
 
@@ -173,4 +174,3 @@ Something went wrong ...
 	or try re-running the installation again.
 	You may delete $ODIR before restarting.
 ${NC}"
-
