@@ -91,7 +91,8 @@ curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 sudo ln -s /usr/include/libxml2/libxml /usr/include/ &>/dev/null
 
 echo "Creating postgres user for current $USER"
-sudo su -l postgres -c "createuser -d $USER &>/dev/null"
+sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>/dev/null \
+&& sayok || ( sudo su -l postgres -c "createuser -d $USER &>/dev/null" && sayok )
 
 # install rtlcss requored for RTL support in Odoo
 echo "Installing rtlcss... "
