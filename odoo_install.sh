@@ -19,12 +19,12 @@ export NC='\033[0m' # No Color
 # function to print a mgs, kill the script & exit
 die(){
 	export MSG=$1; export ERR=$2; 
-	echo "${LRED}Error: $MSG ${NC}" #error msg
+	echo -e "${LRED}Error: $MSG ${NC}" #error msg
 	[[ -n $ERR ]] && exit $ERR || exit 9
 }
 
 sayok(){
-	echo "${LGREEN} OK ${NC}"
+	echo -e "${LGREEN} OK ${NC}"
 }
 # check version
 echo $VER | grep '.0' || die "Version should have .0 like 12.0 not 12" 9999
