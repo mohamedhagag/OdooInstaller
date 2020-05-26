@@ -11,7 +11,9 @@ export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
 
 #Colors
 export RED='\033[0;31m'
+export GREEN='\033[0;32m'
 export LRED='\033[1;31m'
+export LGREEN='\033[1;32m'
 export NC='\033[0m' # No Color
 
 # function to print a mgs, kill the script & exit
@@ -19,6 +21,10 @@ die(){
 	export MSG=$1; export ERR=$2; 
 	echo "${LRED}Error: $MSG ${NC}" #error msg
 	[[ -n $ERR ]] && exit $ERR || exit 9
+}
+
+sayok(){
+	echo "${LGREEN} OK ${NC}"
 }
 # check version
 echo $VER | grep '.0' || die "Version should have .0 like 12.0 not 12" 9999
@@ -62,15 +68,15 @@ cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>
 # check if we have wkhtmltopdf or install it
 echo -n "Installing WKHTML2PDF ... "; aptitude search wkhtmlto | grep ^i &>/dev/null \
   || ( ( ls ./wkhtml*deb &>/dev/null || wget $WKURL &>/dev/null ) && sudo apt -y install ./wkhtml*deb &>/dev/null ) \
-	&& echo OK || die "can not install wkhtml2pdf" 777 
+	&& sayok || die "can not install wkhtml2pdf" 777 
 
 #upgrade & install some deps
 echo -n "Updating system ... "
-sudo apt update &>/dev/null && sudo apt -y dist-upgrade &>/dev/null && echo OK
+sudo apt update &>/dev/null && sudo apt -y dist-upgrade &>/dev/null && sayok
 echo -n "Installing Dependencies ... "
 sudo apt install -y --no-install-recommends aptitude postgresql sassc node-less npm libxml2-dev curl libsasl2-dev \
  libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
- build-essential &>/dev/null && echo OK || die "can not install deps" 11 
+ build-essential &>/dev/null && sayok || die "can not install deps" 11 
 
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
@@ -87,13 +93,13 @@ sudo npm install -g rtlcss &>/dev/null
 # create VirtualEnv and activate it
 echo -n "Creating venv $ODIR ... "
 [[ -d $ODIR ]] || ( virtualenv $ODIR &>/dev/null && cd $ODIR && source $ODIR/bin/activate ) \
-		&& echo OK || die "can not create venv" 33
+		&& sayok || die "can not create venv" 33
 
 # get odoo sources from github
 cd $ODIR 
 echo -n "Cloning odoo git $VER ... "
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
-	&& echo OK || die "can not download odoo sources" 45 &
+	&& sayok || die "can not download odoo sources" 45 &
 
 # create re/start script
 echo "Creating start/stop scripts"
@@ -141,7 +147,7 @@ echo "Installing Python libraries:"
 cd $ODIR && source ./bin/activate
 while read line; 
 	do echo -n " - Installing $line : "
-	pip install "$line" &>/dev/null && echo OK || echo Failed
+	pip install "$line" &>/dev/null && sayok || echo Failed
 done < $RQF
 
 
