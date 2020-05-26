@@ -95,7 +95,7 @@ sudo su -l postgres -c "createuser -d $USER"
 
 # install rtlcss requored for RTL support in Odoo
 echo "Installing rtlcss... "
-sudo npm install -g rtlcss &>/dev/null
+which rtlcss &>/dev/null || sudo npm install -g rtlcss &>/dev/null
 
 # create VirtualEnv and activate it
 echo -n "Creating venv $ODIR ... "
