@@ -29,7 +29,7 @@ sayok(){echo -e "${LGREEN} OK ${NC}"}
 sayfail(){echo -e "${LRED} Failed ${NC}"}
 
 # check version
-echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12" 9999
+echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or master" 9999
 
 echo -e "${LBLUE}
 #############################################################
