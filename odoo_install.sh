@@ -90,7 +90,7 @@ curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 # link a folder to avoid an error in pip install lxml
 sudo ln -s /usr/include/libxml2/libxml /usr/include/ &>/dev/null
 
-echo "Creating postgres user for current $USER"
+echo -n "Creating postgres user for current $USER ..."
 sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>/dev/null \
 && sayok || ( sudo su -l postgres -c "createuser -d $USER &>/dev/null" && sayok )
 
