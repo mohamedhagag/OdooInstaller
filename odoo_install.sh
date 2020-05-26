@@ -38,8 +38,8 @@ echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or
 
 echo -e "${LBLUE}
 #############################################################
-#  Welcome to Odoo installer script by Mohamed M. Hagag
-#  https://linkedin.com/in/mohamedhagag under GPL3 License
+#  Welcome to Odoo installer script by ${LGREEN}Mohamed M. Hagag
+#  https://linkedin.com/in/mohamedhagag ${LBLUE}under GPL3 License
 #-----------------------------------------------------------
 #  Caution: This script For development use only 
 #  with ubuntu 19.10+ , Not for production use 
@@ -155,7 +155,7 @@ cd $ODIR && source ./bin/activate
 while read line 
 	do 
 		echo -n " - Installing $LMSG : "
-		exort LMSG = $(echo "$line" | awk '{print $1}')
+		export LMSG = $(echo "$line" | awk '{print $1}')
 		pip install "$line" &>/dev/null && sayok \
 		|| ( sayfail && die "$LMSG library install error" )
 done < $RQF
