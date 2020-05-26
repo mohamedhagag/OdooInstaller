@@ -7,16 +7,22 @@ export SFX=$(echo $VER | awk -F\. '{print $1}')	 # Odoo folder suffix version wi
 export BWS="$HOME/workspace"		 # Base workspace folder default ~/workspace
 export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
 
+##################### Do Not make changes below this line #####################
+
+#Colors
+export RED='\033[0;31m'
+export LRED='\033[1;31m'
+export NC='\033[0m' # No Color
+
 # function to print a mgs, kill the script & exit
 die(){
 	export MSG=$1; export ERR=$2; 
-	echo "Error: $MSG" #error msg
+	echo "${LRED}Error: $MSG ${NC}" #error msg
 	[[ -n $ERR ]] && exit $ERR || exit 9
 }
 # check version
 echo $VER | grep '.0' || die "Version should have .0 like 12.0 not 12" 9999
 
-##### DO Not change below this line
 echo -e "
 #############################################################
 #  Welcome to Odoo installer script by Mohamed M. Hagag
@@ -54,17 +60,17 @@ mkdir -p $HOME/bin
 cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>~/.bashrc
 
 # check if we have wkhtmltopdf or install it
-echo "Installing WKHTML2PDF"; aptitude search wkhtmlto | grep ^i &>/dev/null \
+echo -n "Installing WKHTML2PDF ... "; aptitude search wkhtmlto | grep ^i &>/dev/null \
   || ( ( ls ./wkhtml*deb &>/dev/null || wget $WKURL &>/dev/null ) && sudo apt -y install ./wkhtml*deb &>/dev/null ) \
-	|| die "can not install wkhtml2pdf" 777 
+	&& echo OK || die "can not install wkhtml2pdf" 777 
 
 #upgrade & install some deps
-echo "Updating system ..."
-sudo apt update &>/dev/null && sudo apt -y dist-upgrade &>/dev/null
-echo "Installing Dependencies ..."
+echo -n "Updating system ... "
+sudo apt update &>/dev/null && sudo apt -y dist-upgrade &>/dev/null && echo OK
+echo -n "Installing Dependencies ... "
 sudo apt install -y --no-install-recommends aptitude postgresql sassc node-less npm libxml2-dev curl libsasl2-dev \
  libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
- build-essential &>/dev/null || die "can not install deps" 11 
+ build-essential &>/dev/null && echo OK || die "can not install deps" 11 
 
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
@@ -75,21 +81,22 @@ echo "Creating postgres user for current $USER"
 sudo su -l postgres -c "createuser -d $USER"
 
 # install rtlcss requored for RTL support in Odoo
-echo "Installing rtlcss..."
+echo "Installing rtlcss... "
 sudo npm install -g rtlcss &>/dev/null
 
 # create VirtualEnv and activate it
-echo "Creating venv $ODIR"
+echo -n "Creating venv $ODIR ... "
 [[ -d $ODIR ]] || ( virtualenv $ODIR &>/dev/null && cd $ODIR && source $ODIR/bin/activate ) \
-		|| die "can not create venv" 33
+		&& echo OK || die "can not create venv" 33
 
 # get odoo sources from github
 cd $ODIR 
-echo "Cloning odoo git $VER ..."
+echo -n "Cloning odoo git $VER ... "
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
-	|| die "can not download odoo sources" 45 &
+	&& echo OK || die "can not download odoo sources" 45 &
 
 # create re/start script
+echo "Creating start/stop scripts"
 echo "#!/bin/bash
 find $ODIR/ -type f -name \"*pyc\" -delete
 for prc in \$(ps aux | grep -v grep | grep -i \$(basename $ODIR) | grep python | awk '{print \$2}'); do kill -9 \$prc &>/dev/null; done
@@ -116,7 +123,7 @@ dev = all
 "> $ODIR/Odoo_$SFX.conf && mkdir -p $ODIR/my_adds
 
 # change some python pkg versions
-sed -i -e "s,psycopg2,psycopg2-binary,g" $RQF
+sed -i -e "s,psycopg2.*,psycopg2,g" $RQF
 sed -i -e "s,num2words.*,num2words,g" $RQF
 sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
 #sed -i -e "s,pytz.*,pytz,g" $RQF
@@ -130,9 +137,12 @@ sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
 #sed -i -e "s,pillow.*,pillow,g" $RQF
 #sed -i -e "s,Pillow.*,Pillow,g" $RQF
 
-# install python pkgs
-cd $ODIR && source bin/activate
-while read line;  do echo -n "Installing $line : "; pip install "$line" &>/dev/null && echo OK || echo Failed; done < $RQF
+echo "Installing Python libraries:"
+cd $ODIR && source ./bin/activate
+while read line; 
+	do echo -n " - Installing $line : "
+	pip install "$line" &>/dev/null && echo OK || echo Failed
+done < $RQF
 
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>/dev/null \
@@ -148,6 +158,8 @@ while read line;  do echo -n "Installing $line : "; pip install "$line" &>/dev/n
 #############################################################
 
 Good luck, ;) .
-" || echo -e "Something went wrong, Try re-running the installation again.
-You may delete $ODIR before restarting."
+" || echo -e "Something went wrong ...
+	Plz check the previous messages for errors
+	or try re-running the installation again.
+	You may delete $ODIR before restarting."
 
