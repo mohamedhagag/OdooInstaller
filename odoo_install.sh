@@ -23,6 +23,12 @@ export NC='\033[0m' # No Color
 die(){
 	export MSG=$1; export ERR=$2; 
 	echo -e "${LRED}Error: $MSG ${NC}" #error msg
+	echo -e "${LRED}
+Something went wrong ...
+	Plz check the previous messages for errors
+	and try re-running the installation again.
+	You may delete $ODIR before restarting.
+${NC}"
 	[[ -n $ERR ]] && exit $ERR || exit 9
 }
 
@@ -95,8 +101,9 @@ sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>/dev/null \
 && sayok || ( sudo su -l postgres -c "createuser -d $USER &>/dev/null" && sayok )
 
 # install rtlcss requored for RTL support in Odoo
-echo "Installing rtlcss... "
-which rtlcss &>/dev/null || sudo npm install -g rtlcss &>/dev/null
+echo -n "Installing rtlcss... "
+which rtlcss &>/dev/null && sayok \
+|| ( sudo npm install -g rtlcss &>/dev/null && sayok )
 
 # create VirtualEnv and activate it
 echo -n "Creating venv $ODIR ... "
@@ -175,9 +182,4 @@ done < $RQF
 #############################################################
 
 Good luck, ;) .
-${NC}" || echo -e "${LRED}
-Something went wrong ...
-	Plz check the previous messages for errors
-	or try re-running the installation again.
-	You may delete $ODIR before restarting.
-${NC}"
+${NC}" || die "Installation Failed" 1010
