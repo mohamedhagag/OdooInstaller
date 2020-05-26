@@ -91,7 +91,7 @@ curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 sudo ln -s /usr/include/libxml2/libxml /usr/include/ &>/dev/null
 
 echo "Creating postgres user for current $USER"
-sudo su -l postgres -c "createuser -d $USER"
+sudo su -l postgres -c "createuser -d $USER &>/dev/null"
 
 # install rtlcss requored for RTL support in Odoo
 echo "Installing rtlcss... "
@@ -106,7 +106,7 @@ echo -n "Creating venv $ODIR ... "
 cd $ODIR 
 echo -n "Cloning odoo git $VER ... "
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
-	&& sayok || die "can not download odoo sources" 45 &
+	|| die "can not download odoo sources" 45 &
 
 # create re/start script
 echo "Creating start/stop scripts"
