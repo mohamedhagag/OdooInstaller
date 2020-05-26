@@ -25,8 +25,12 @@ die(){
 	[[ -n $ERR ]] && exit $ERR || exit 9
 }
 
-sayok(){ echo -e "${LGREEN} OK ${NC}" }
-sayfail(){ echo -e "${LRED} Failed ${NC}" }
+sayok(){ 
+	echo -e "${LGREEN} OK ${NC}" 
+}
+sayfail(){ 
+	echo -e "${LRED} Failed ${NC}" 
+}
 
 # check version
 echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or master" 9999
@@ -149,9 +153,10 @@ echo "Installing Python libraries:"
 cd $ODIR && source ./bin/activate
 while read line 
 	do 
-		echo -n " * Installing $LMSG : "
+		echo -n " - Installing $LMSG : "
 		exort LMSG = $(echo "$line" | awk '{print $1}')
-		pip install "$line" &>/dev/null && sayok || ( sayfail && die "$LMSG library install error" )
+		pip install "$line" &>/dev/null && sayok \
+		|| ( sayfail && die "$LMSG library install error" )
 done < $RQF
 
 
