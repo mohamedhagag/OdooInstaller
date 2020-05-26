@@ -4,6 +4,7 @@ export VER=13.0		 # set odoo version - should work with any version after 11.0 -
 [[ -n $1 ]] && export VER="$1"
 ### Config vars - you may change these - but defaults are good 
 export SFX=$(echo $VER | awk -F\. '{print $1}')	 # Odoo folder suffix version without ".0"
+[[ $SFX = 'master' ]] && export SFX=99
 export BWS="$HOME/workspace"		 # Base workspace folder default ~/workspace
 export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
 
