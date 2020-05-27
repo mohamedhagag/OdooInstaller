@@ -115,7 +115,7 @@ echo -n "Creating venv $ODIR ... "
 cd $ODIR 
 echo -n "Cloning odoo git $VER ... "
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
-	|| die "can not download odoo sources" 45 &
+	|| die "can not download odoo sources" 45 
 
 # create re/start script
 echo "Creating start/stop scripts"
@@ -173,8 +173,9 @@ done < $RQF
 
 
 echo -n "Installing & Creating VSCode workspace ... "
-rm -f /tmp/code.deb
-wget -O /tmp/code.deb "$CODE" &>/dev/null && apt -y install /tmp/code.deb &>/dev/null
+rm -f /tmp/code.deb &>/dev/null
+sudo aptitude search code | grep ^i | grep -i 'code editing' &>/dev/null \
+	|| ( wget -O /tmp/code.deb "$CODE" &>/dev/null && apt -y install /tmp/code.deb &>/dev/null)
 
 mkdir -p $ODIR/.vscode
 echo '{
@@ -207,6 +208,8 @@ echo '{
 		}
 	]
 }'>$ODIR/.vscode/Odoo_${SFX}.code-workspace
+
+sayok
 
 code $ODIR/.vscode/Odoo_${SFX}.code-workspace &
 
