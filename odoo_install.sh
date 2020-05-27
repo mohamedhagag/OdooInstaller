@@ -121,7 +121,7 @@ echo "Creating start/stop scripts"
 echo "#!/bin/bash
 find $ODIR/ -type f -name \"*pyc\" -delete
 for prc in \$(ps aux | grep -v grep | grep -i \$(basename $ODIR) | grep python | awk '{print \$2}'); do kill -9 \$prc &>/dev/null; done
-cd $ODIR && source bin/activate && cd odoo && ./odoo-bin -c ../Odoo_$SFX.conf \$@
+cd $ODIR && source bin/activate && ./odoo/odoo-bin -c ./Odoo_$SFX.conf \$@
 " > $ODIR/.start.sh \
 	&& chmod u+x $ODIR/.start.sh \
 	&& cp $ODIR/.start.sh ~/bin/Odoo_Start_$SFX \
@@ -134,7 +134,7 @@ head -3 $ODIR/.start.sh > $ODIR/.stop.sh && chmod u+x $ODIR/.stop.sh \
 
 # create odoo config file
 echo "[options]
-addons_path = ./odoo/addons,./addons,../my_adds
+addons_path = ./odoo/odoo/addons,./odoo/addons,./my_adds
 xmlrpc_port = 80$SFX
 longpolling_port = 70$SFX
 workers = 2
