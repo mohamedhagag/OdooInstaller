@@ -214,7 +214,7 @@ sayok
 
 code $ODIR/.vscode/Odoo_${SFX}.code-workspace &
 
-while $(ps aux | grep git | grep $OGH &>/dev/null); do sleep 5; done
+while $(ps aux | grep git | grep -v grep | grep $OGH &>/dev/null); do sleep 5; done
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>/dev/null \
 && echo -e "${LGREEN}
