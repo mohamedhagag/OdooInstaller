@@ -208,8 +208,8 @@ echo '{
 		}
 	]
 }'>$ODIR/.vscode/Odoo_${SFX}.code-workspace
-createdb zt${SFX}d1
-createdb zt${SFX}d2
+createdb zt${SFX}d1 &>/dev/null
+createdb zt${SFX}d2 &>/dev/null
 sayok
 
 code $ODIR/.vscode/Odoo_${SFX}.code-workspace &
