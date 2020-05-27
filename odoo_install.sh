@@ -147,6 +147,8 @@ dev = all
 sed -i -e "s,psycopg2.*,psycopg2,g" $RQF
 sed -i -e "s,num2words.*,num2words,g" $RQF
 sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
+echo phonenumbers >> $RQF
+echo pyaml >> $RQF
 #sed -i -e "s,pytz.*,pytz,g" $RQF
 #sed -i -e "s,psutil.*,psutil,g" $RQF
 #sed -i -e "s,passlib.*,passlib,g" $RQF
