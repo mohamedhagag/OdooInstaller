@@ -70,6 +70,7 @@ export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.
 export OGH="https://github.com/odoo/odoo"
 export REQ="https://raw.githubusercontent.com/odoo/odoo/master/requirements.txt"
 export RQF=`mktemp`
+export CODE="https://go.microsoft.com/fwlink/?LinkID=760868"
 
 # create workspace dir
 mkdir -p $BWS && cd $BWS || die "Can not create $BWS folder" 888
@@ -170,6 +171,44 @@ while read line
 		|| ( sayfail && die "$LMSG library install error" )
 done < $RQF
 
+
+echo -n "Installing & Creating VSCode workspace ... "
+rm -f /tmp/code.deb
+wget -O /tmp/code.deb "$CODE" &>/dev/null && apt -y install /tmp/code.deb &>/dev/null
+
+mkdir -p $ODIR/.vscode
+echo '{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "cwd": "${workspaceFolder}",
+            "request": "launch",
+            "program": "./odoo/odoo-bin",
+            "args": ["-c","./Odoo_*.conf"],
+            "env": {"GEVENT_SUPPORT":"True"},
+            "console": "integratedTerminal"
+        }
+    ]
+}' >$ODIR/.vscode/launch.json
+
+echo '{
+    "python.pythonPath": "bin/python"
+}'>$ODIR/.vscode/settings.json
+
+echo '{
+	"folders": [
+		{
+			"path": ".."
+		}
+	]
+}'>$ODIR/.vscode/Odoo_${SFX}.code-workspace
+
+code $ODIR/.vscode/Odoo_${SFX}.code-workspace &
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>/dev/null \
 && echo -e "${LGREEN}
