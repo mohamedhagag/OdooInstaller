@@ -113,7 +113,7 @@ echo -n "Creating venv $ODIR ... "
 
 # get odoo sources from github
 cd $ODIR 
-echo -n "Cloning odoo git $VER ... "
+echo "Cloning odoo git $VER ... "
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
 	|| die "can not download odoo sources" 45 &
 
