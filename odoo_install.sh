@@ -115,7 +115,7 @@ echo -n "Creating venv $ODIR ... "
 cd $ODIR 
 echo -n "Cloning odoo git $VER ... "
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
-	|| die "can not download odoo sources" 45 
+	|| die "can not download odoo sources" 45 &
 
 # create re/start script
 echo "Creating start/stop scripts"
@@ -213,6 +213,8 @@ createdb zt${SFX}d2 &>/dev/null
 sayok
 
 code $ODIR/.vscode/Odoo_${SFX}.code-workspace &
+
+while $(ps aux | grep git | grep $OGH &>/dev/null); do sleep 5; done
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>/dev/null \
 && echo -e "${LGREEN}
