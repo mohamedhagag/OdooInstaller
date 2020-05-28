@@ -92,8 +92,8 @@ sudo apt -y install python3-virtualenvwrapper &>/dev/null
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
 echo -n "Installing WKHTML2PDF ... "
-which wkhtml2pdf &>/dev/null \
-  || ( aria2c -o wkhtml.deb $WKURL &>/dev/null && sudo apt -y install ./wkhtml.deb &>/dev/null ) \
+which wkhtmltopdf &>/dev/null \
+  || ( aria2c -o wkhtml.deb "$WKURL" &>/dev/null && sudo apt -y install ./wkhtml.deb &>/dev/null ) \
 	&& sayok || die "can not install wkhtml2pdf" 777 
 
 # link a folder to avoid an error in pip install lxml
