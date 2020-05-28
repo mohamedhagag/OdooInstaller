@@ -52,7 +52,7 @@ echo -e "${LBLUE}
 #  You can set odoo version by calling $0 Version
 #  Like $0 14.0 to install odoo 14.0
 # --------------------------------------------
-#  Now we will install Odoo v $VER
+#  Now we will install Odoo v $LRED $VER $LBLUE
 #  In $BWS/Odoo_$SFX
 #  On success:
 #  - you can re/start odoo by running Odoo_Start_$SFX
