@@ -104,7 +104,7 @@ curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 # link a folder to avoid an error in pip install lxml
 sudo ln -s /usr/include/libxml2/libxml /usr/include/ &>/dev/null
 
-echo -n "Creating postgres user for current $USER ..."
+echo -n "Creating postgres user for $USER ..."
 sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>/dev/null \
 && sayok || ( sudo su -l postgres -c "createuser -d $USER &>/dev/null" && sayok )
 
@@ -180,12 +180,12 @@ done < $RQF
 echo "Installing & Creating VSCode workspace ... "
 while $(ps aux | grep code | grep aria2 &>/dev/null); do sleep 5; done
 which code &>/dev/null \
-	|| sudo apt -y install ./vscode.deb &>/dev/null &
+	|| sudo apt -y install $BWS/vscode.deb &>/dev/null &
 
 echo -n "Installing WKHTML2PDF ... "
 while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
 which wkhtmltopdf &>/dev/null \
-  || sudo apt -y install ./wkhtml.deb &>/dev/null \
+  || sudo apt -y install $BWS/wkhtml.deb &>/dev/null \
 	&& sayok || die "can not install wkhtml2pdf" 777 
 
 
