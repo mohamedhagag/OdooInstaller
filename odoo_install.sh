@@ -57,8 +57,8 @@ echo -e "${LBLUE}
 #  On success:
 #  - you can re/start odoo by running Odoo_Start_$SFX
 #  - stop odoo by running Odoo_Stop_$SFX
-#  - Odoo config file $LGREEN $ODIR/Odoo_$SFX.conf $NC
-#  - Odoo  will be running on $LRED http://localhost:80$SFX $NC
+#  - Odoo config file $LGREEN $ODIR/Odoo_$SFX.conf $LBLUE
+#  - Odoo  will be running on $LRED http://localhost:80$SFX $LBLUE
 #  - VSCode will be installed and configured for Odoo Dev
 ############################################################
 
