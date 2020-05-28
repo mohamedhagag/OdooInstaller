@@ -127,10 +127,6 @@ echo "Cloning odoo git $VER ... "
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
 	|| die "can not download odoo sources" 45 &
 
-echo "Installing & Creating VSCode workspace ... "
-which code &>/dev/null \
-	|| sudo apt -y install ./vscode.deb &>/dev/null &
-
 echo "Creating start/stop scripts"
 echo "#!/bin/bash
 find $ODIR/ -type f -name \"*pyc\" -delete
@@ -184,6 +180,10 @@ while read line
 		|| ( sayfail && die "$LMSG library install error" )
 done < $RQF
 
+echo "Installing & Creating VSCode workspace ... "
+which code &>/dev/null \
+	|| sudo apt -y install ./vscode.deb &>/dev/null &
+	
 mkdir -p $ODIR/.vscode
 echo '{
     // Use IntelliSense to learn about possible attributes.
