@@ -85,7 +85,7 @@ cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>
 # sudo apt update &>/dev/null && sudo apt -y dist-upgrade &>/dev/null && sayok
 
 echo -n "Installing base tools ..."
-sudo apt install -y --no-install-recommends aria2 wget curl && sayok || die "Failed"
+sudo apt install -y --no-install-recommends aria2 wget curl &>/dev/null && sayok || die "Failed"
 
 aria2c -o wkhtml.deb "$WKURL" &>/dev/null &
 aria2c -o vscode.deb "$CODE" &>/dev/null &
