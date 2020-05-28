@@ -258,6 +258,7 @@ GrapeCity.gc-excelviewer
 janisdd.vscode-edit-csv
 magicstack.MagicPython
 mechatroner.rainbow-csv
+dbaeumer.vscode-eslint
 ms-python.python
 ms-vscode.atom-keybindings
 vscode-icons-team.vscode-icons
