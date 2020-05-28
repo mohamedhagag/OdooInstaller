@@ -171,6 +171,7 @@ sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
 #sed -i -e "s,reportlab.*,reportlab,g" $RQF
 echo phonenumbers >> $RQF
 echo pyaml >> $RQF
+echo pylint >> $RQF
 
 echo "Installing Python libraries:"
 cd $ODIR && source ./bin/activate
@@ -207,12 +208,15 @@ echo '{
 }'>$ODIR/.vscode/settings.json
 
 echo '{
+	"python.envFile": ${workspaceFolder}/.env,
 	"folders": [
 		{
 			"path": ".."
 		}
 	]
 }'>$ODIR/.vscode/Odoo_${SFX}.code-workspace
+
+echo "PYTHONPATH=$ODIR/odoo" >$ODIR/.env
 
 createdb zt${SFX}d1 &>/dev/null
 createdb zt${SFX}d2 &>/dev/null
