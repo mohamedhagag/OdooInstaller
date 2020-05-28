@@ -51,13 +51,15 @@ echo -e "${LBLUE}
 #  with ubuntu 19.10+ , Not for production use 
 #  You can set odoo version by calling $0 Version
 #  Like $0 14.0 to install odoo 14.0
-#  It will install Odoo v$VER
+# --------------------------------------------
+#  Now we will install Odoo v$VER
 #  In $BWS/Odoo_$SFX
 #  On success:
 #  - you can re/start odoo by running Odoo_Start_$SFX
 #  - stop odoo by running Odoo_Stop_$SFX
-#  - Odoo config file $ODIR/Odoo_$SFX.conf
-#  - Odoo  will be running on http://localhost:80$SFX
+#  - Odoo config file $LGREEN $ODIR/Odoo_$SFX.conf $NC
+#  - Odoo  will be running on $LRED http://localhost:80$SFX $NC
+#  - VSCode will be installed and configured for Odoo Dev
 ############################################################
 
 Press Enter to continue or CTRL+C to exit :
@@ -269,11 +271,12 @@ which code &>/dev/null && code $ODIR/.vscode/Odoo_${SFX}.code-workspace &
 #############################################################
 #  Looks like everything went well.
 #  You should now:
-#  - Have Odoo v$VER In $BWS/Odoo_$SFX
+#  - Have Odoo v$VER In $LRED $BWS/Odoo_$SFX $LGREEN
 #  - you can re/start odoo by running Odoo_Start_$SFX
 #  - stop odoo by running Odoo_Stop_$SFX
 #  - Odoo config file $ODIR/Odoo_$SFX.conf
-#  - You can now access odoo on http://localhost:80$SFX
+#  - VSCode should be installed & configured for Odoo Devs
+#  - Then access odoo on$LRED http://localhost:80$SFX $LGREEN
 #############################################################
 
 Good luck, ;) .
