@@ -80,13 +80,13 @@ mkdir -p $HOME/bin
 cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>~/.bashrc
 
 # check if we have wkhtmltopdf or install it
-echo -n "Installing WKHTML2PDF ... "; aptitude search wkhtmlto | grep ^i &>/dev/null \
+echo -n "Installing WKHTML2PDF ... "; which wkhtml2pdf &>/dev/null \
   || ( ( ls ./wkhtml*deb &>/dev/null || wget $WKURL &>/dev/null ) && sudo apt -y install ./wkhtml*deb &>/dev/null ) \
 	&& sayok || die "can not install wkhtml2pdf" 777 
 
-#upgrade & install some deps
-echo -n "Updating system ... "
-sudo apt update &>/dev/null && sudo apt -y dist-upgrade &>/dev/null && sayok
+# echo -n "Updating system ... "
+# sudo apt update &>/dev/null && sudo apt -y dist-upgrade &>/dev/null && sayok
+
 echo -n "Installing Dependencies ... "
 sudo apt install -y --no-install-recommends aptitude postgresql sassc node-less npm libxml2-dev curl libsasl2-dev \
  libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
@@ -117,7 +117,11 @@ echo "Cloning odoo git $VER ... "
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
 	|| die "can not download odoo sources" 45 &
 
-# create re/start script
+echo "Installing & Creating VSCode workspace ... "
+rm -f /tmp/code.deb &>/dev/null
+which code &>/dev/null \
+	|| ( wget -O /tmp/code.deb "$CODE" &>/dev/null && apt -y install /tmp/code.deb &>/dev/null) &
+
 echo "Creating start/stop scripts"
 echo "#!/bin/bash
 find $ODIR/ -type f -name \"*pyc\" -delete
@@ -128,12 +132,11 @@ cd $ODIR && source bin/activate && ./odoo/odoo-bin -c ./Odoo_$SFX.conf \$@
 	&& cp $ODIR/.start.sh ~/bin/Odoo_Start_$SFX \
 	|| die "can not create start script"
 
-# create stop script
 head -3 $ODIR/.start.sh > $ODIR/.stop.sh && chmod u+x $ODIR/.stop.sh \
 	&& cp $ODIR/.stop.sh ~/bin/Odoo_Stop_$SFX \
 	|| die "can not create STOP script"
 
-# create odoo config file
+echo "Creating odoo config file ..."
 echo "[options]
 addons_path = ./odoo/odoo/addons,./odoo/addons,./my_adds
 xmlrpc_port = 80$SFX
@@ -171,12 +174,6 @@ while read line
 		|| ( sayfail && die "$LMSG library install error" )
 done < $RQF
 
-
-echo -n "Installing & Creating VSCode workspace ... "
-rm -f /tmp/code.deb &>/dev/null
-sudo aptitude search code | grep ^i | grep -i 'code editing' &>/dev/null \
-	|| ( wget -O /tmp/code.deb "$CODE" &>/dev/null && apt -y install /tmp/code.deb &>/dev/null)
-
 mkdir -p $ODIR/.vscode
 echo '{
     // Use IntelliSense to learn about possible attributes.
@@ -210,11 +207,10 @@ echo '{
 }'>$ODIR/.vscode/Odoo_${SFX}.code-workspace
 createdb zt${SFX}d1 &>/dev/null
 createdb zt${SFX}d2 &>/dev/null
-sayok
-
-code $ODIR/.vscode/Odoo_${SFX}.code-workspace &
 
 while $(ps aux | grep git | grep -v grep | grep $OGH &>/dev/null); do sleep 5; done
+while $(ps aux | grep wget | grep code | grep -v grep &>/dev/null); do sleep 5; done
+which code &>/dev/null && code $ODIR/.vscode/Odoo_${SFX}.code-workspace &
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>/dev/null \
 && echo -e "${LGREEN}
