@@ -120,7 +120,7 @@ echo "Cloning odoo git $VER ... "
 echo "Installing & Creating VSCode workspace ... "
 rm -f /tmp/code.deb &>/dev/null
 which code &>/dev/null \
-	|| ( wget -O /tmp/code.deb "$CODE" &>/dev/null && apt -y install /tmp/code.deb &>/dev/null) &
+	|| ( wget -O /tmp/code.deb "$CODE" &>/dev/null && sudo apt -y install /tmp/code.deb &>/dev/null) &
 
 echo "Creating start/stop scripts"
 echo "#!/bin/bash
@@ -151,18 +151,18 @@ dev = all
 sed -i -e "s,psycopg2.*,psycopg2,g" $RQF
 sed -i -e "s,num2words.*,num2words,g" $RQF
 sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
-echo phonenumbers >> $RQF
-echo pyaml >> $RQF
+#sed -i -e "s,Babel.*,Babel,g" $RQF
+#sed -i -e "s,html2text.*,html2text,g" $RQF
 #sed -i -e "s,pytz.*,pytz,g" $RQF
 #sed -i -e "s,psutil.*,psutil,g" $RQF
 #sed -i -e "s,passlib.*,passlib,g" $RQF
-#sed -i -e "s,reportlab.*,reportlab,g" $RQF
-#sed -i -e "s,lxml.*,lxml,g" $RQF
-#sed -i -e "s,Babel.*,Babel,g" $RQF
-#sed -i -e "s,html2text.*,html2text,g" $RQF
 #sed -i -e "s,libsass.*,libsass,g" $RQF
 #sed -i -e "s,pillow.*,pillow,g" $RQF
 #sed -i -e "s,Pillow.*,Pillow,g" $RQF
+#sed -i -e "s,lxml.*,lxml,g" $RQF
+#sed -i -e "s,reportlab.*,reportlab,g" $RQF
+echo phonenumbers >> $RQF
+echo pyaml >> $RQF
 
 echo "Installing Python libraries:"
 cd $ODIR && source ./bin/activate
