@@ -66,6 +66,7 @@ ${NC}" && read && sudo ls >/dev/null
 # only work on ubuntu
 lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems supported" 999
 
+alias aria2c='aria2c -c -x4 -s4'
 export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb"
 export OGH="https://github.com/odoo/odoo"
 export REQ="https://raw.githubusercontent.com/odoo/odoo/master/requirements.txt"
@@ -83,7 +84,7 @@ cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>
 # sudo apt update &>/dev/null && sudo apt -y dist-upgrade &>/dev/null && sayok
 
 echo -n "Installing Dependencies ... "
-sudo apt install -y --no-install-recommends wget aptitude postgresql sassc node-less npm libxml2-dev curl libsasl2-dev \
+sudo apt install -y --no-install-recommends aria2 wget aptitude postgresql sassc node-less npm libxml2-dev curl libsasl2-dev \
  libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
  build-essential &>/dev/null && sayok || die "can not install deps" 11 
 
@@ -91,7 +92,7 @@ curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
 echo -n "Installing WKHTML2PDF ... "
 which wkhtml2pdf &>/dev/null \
-  || ( ( ls ./wkhtml*deb &>/dev/null || wget $WKURL &>/dev/null ) && sudo apt -y install ./wkhtml*deb &>/dev/null ) \
+  || ( ( aria2c -o /tmp/wkhtml.deb $WKURL &>/dev/null ) && sudo apt -y install /tmp/wkhtml*deb &>/dev/null ) \
 	&& sayok || die "can not install wkhtml2pdf" 777 
 
 # link a folder to avoid an error in pip install lxml
@@ -118,9 +119,8 @@ echo "Cloning odoo git $VER ... "
 	|| die "can not download odoo sources" 45 &
 
 echo "Installing & Creating VSCode workspace ... "
-rm -f /tmp/code.deb &>/dev/null
 which code &>/dev/null \
-	|| ( wget -O /tmp/code.deb "$CODE" &>/dev/null && sudo apt -y install /tmp/code.deb &>/dev/null) &
+	|| ( aria2c -o /tmp/code.deb "$CODE" &>/dev/null && sudo apt -y install /tmp/code.deb &>/dev/null) &
 
 echo "Creating start/stop scripts"
 echo "#!/bin/bash
