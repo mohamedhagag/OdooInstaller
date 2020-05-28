@@ -44,21 +44,22 @@ echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or
 
 echo -e "${LBLUE}
 #############################################################
-#  Welcome to Odoo installer script by ${LGREEN}Mohamed M. Hagag
-#  https://linkedin.com/in/mohamedhagag ${LBLUE}under GPL3 License
+#  Welcome to Odoo installer script by 
+#  ${LGREEN}Mohamed M. Hagag https://linkedin.com/in/mohamedhagag${LBLUE}
+#  released under GPL3 License
 #-----------------------------------------------------------
-#  Caution: This script For development use only 
-#  with ubuntu 19.10+ , Not for production use 
-#  You can set odoo version by calling $0 Version
-#  Like $0 14.0 to install odoo 14.0
-# --------------------------------------------
-#  Now we will install Odoo v $LRED $VER $LBLUE
-#  In $BWS/Odoo_$SFX
+#  ${LRED}Caution: This script For development use only${LBLUE}
+#  Not for production use, and works with ubuntu 19.10+
+#  You can set odoo version by calling ${NC}$0 \${VER}$LBLUE
+#  for ex. $NC# $0 14.0 ${LBLUE}to install odoo v 14.0
+#-----------------------------------------------------------
+#  Now we will install Odoo v.${LRED} $VER $LBLUE
+#  In$LGREEN $BWS/Odoo_$SFX $LBLUE
 #  On success:
 #  - you can re/start odoo by running Odoo_Start_$SFX
 #  - stop odoo by running Odoo_Stop_$SFX
 #  - Odoo config file $LGREEN $ODIR/Odoo_$SFX.conf $LBLUE
-#  - Odoo  will be running on $LRED http://localhost:80$SFX $LBLUE
+#  - Odoo  will be running on$LRED http://localhost:80$SFX $LBLUE
 #  - VSCode will be installed and configured for Odoo Dev
 ############################################################
 
