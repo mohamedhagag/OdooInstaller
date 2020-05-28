@@ -87,6 +87,7 @@ echo -n "Installing Dependencies ... "
 sudo apt install -y --no-install-recommends aria2 wget aptitude postgresql sassc node-less npm libxml2-dev curl libsasl2-dev \
  libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
  build-essential &>/dev/null && sayok || die "can not install deps" 11 
+sudo apt -y install python3-virtualenvwrapper &>/dev/null
 
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
