@@ -110,7 +110,7 @@ which rtlcss &>/dev/null && sayok \
 
 # create VirtualEnv and activate it
 echo -n "Creating venv $ODIR ... "
-[[ -d $ODIR ]] || ( virtualenv $ODIR &>/dev/null && cd $ODIR && source $ODIR/bin/activate ) \
+[[ -d $ODIR ]] || ( virtualenv -p python3 $ODIR &>/dev/null && cd $ODIR && source $ODIR/bin/activate ) \
 		&& sayok || die "can not create venv" 33
 
 # get odoo sources from github
@@ -206,11 +206,47 @@ echo '{
 		}
 	]
 }'>$ODIR/.vscode/Odoo_${SFX}.code-workspace
+
 createdb zt${SFX}d1 &>/dev/null
 createdb zt${SFX}d2 &>/dev/null
 
+export shmmax=$(expr $(free | grep Mem | awk '{print $2}') / 2)000
+export shmall=$(expr $shmmax / 4096)
+
+echo "############ Odoo, Postgress & VSCode #########
+fs.inotify.max_user_watches = 524288
+fs.aio-max-nr = 1048576
+fs.file-max = 6815744
+kernel.shmall = $shmall
+kernel.shmmax = $shmmax
+kernel.shmmni = 4096
+kernel.sem = 250 32000 100 128
+net.ipv4.ip_local_port_range = 9000 65500
+net.core.rmem_default = 262144
+net.core.rmem_max = 4194304
+net.core.wmem_default = 262144
+net.core.wmem_max = 1048586
+" | sudo tee -a /etc/sysctl.conf &>/dev/null; sudo sysctl -p &>/dev/null
+
 while $(ps aux | grep git | grep odoo &>/dev/null); do sleep 5; done
 while $(ps aux | grep code | grep deb &>/dev/null); do sleep 5; done
+
+export vscext="Atishay-Jain.All-Autocomplete
+jeffery9.odoo-snippets
+DotJoshJohnson.xml
+formulahendry.auto-close-tag
+formulahendry.auto-rename-tag
+GrapeCity.gc-excelviewer
+janisdd.vscode-edit-csv
+magicstack.MagicPython
+mechatroner.rainbow-csv
+ms-python.python
+ms-vscode.atom-keybindings
+vscode-icons-team.vscode-icons
+Zignd.html-css-class-completion
+"
+echo "Setting some vscode extensions"
+for ext in vscext; do code --install-extension $ext &>/dev/null ; done
 which code &>/dev/null && code $ODIR/.vscode/Odoo_${SFX}.code-workspace &
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>/dev/null \
