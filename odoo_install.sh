@@ -82,7 +82,7 @@ mkdir -p $BWS && cd $BWS || die "Can not create $BWS folder" 888
 
 # create user's bin and add it to $PATH
 mkdir -p $HOME/bin 
-cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>~/.bashrc
+cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:\$PATH" >>~/.bashrc
 
 echo "Updating system ... "
 sudo apt update &>/dev/null 
@@ -251,6 +251,7 @@ while $(ps aux | grep code | grep deb &>/dev/null); do sleep 5; done
 
 export vscext="Atishay-Jain.All-Autocomplete
 jigar-patel.odoosnippets
+coenraads.bracket-pair-colorizer
 DotJoshJohnson.xml
 formulahendry.auto-close-tag
 formulahendry.auto-rename-tag
