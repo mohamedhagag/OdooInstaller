@@ -67,10 +67,11 @@ ${NC}" && read && sudo ls >/dev/null
 lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems supported" 999
 
 alias aria2c='aria2c -c -x4 -s4'
+
 export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb"
 export OGH="https://github.com/odoo/odoo"
 export REQ="https://raw.githubusercontent.com/odoo/odoo/master/requirements.txt"
-export RQF=`mktemp`
+export RQF=$(mktemp)
 export CODE="https://go.microsoft.com/fwlink/?LinkID=760868"
 
 # create workspace dir
@@ -83,9 +84,15 @@ cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>
 # echo -n "Updating system ... "
 # sudo apt update &>/dev/null && sudo apt -y dist-upgrade &>/dev/null && sayok
 
+echo -n "Installing base tools ..."
+sudo apt install -y --no-install-recommends aria2 wget curl && sayok || die "Failed"
+
+aria2c -o wkhtml.deb "$WKURL" &>/dev/null &
+aria2c -o vscode.deb "$CODE" &>/dev/null &
+
 echo -n "Installing Dependencies ... "
-sudo apt install -y --no-install-recommends aria2 wget aptitude postgresql sassc node-less npm libxml2-dev curl libsasl2-dev \
- libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
+sudo apt install -y --no-install-recommends postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
+ libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
  build-essential &>/dev/null && sayok || die "can not install deps" 11 
 sudo apt -y install python3-virtualenvwrapper &>/dev/null
 
@@ -93,7 +100,7 @@ curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
 echo -n "Installing WKHTML2PDF ... "
 which wkhtmltopdf &>/dev/null \
-  || ( aria2c -o wkhtml.deb "$WKURL" &>/dev/null && sudo apt -y install ./wkhtml.deb &>/dev/null ) \
+  || sudo apt -y install ./wkhtml.deb &>/dev/null \
 	&& sayok || die "can not install wkhtml2pdf" 777 
 
 # link a folder to avoid an error in pip install lxml
@@ -121,7 +128,7 @@ echo "Cloning odoo git $VER ... "
 
 echo "Installing & Creating VSCode workspace ... "
 which code &>/dev/null \
-	|| ( aria2c -o ./vscode.deb "$CODE" &>/dev/null && sudo apt -y install ./vscode.deb &>/dev/null) &
+	|| sudo apt -y install ./vscode.deb &>/dev/null &
 
 echo "Creating start/stop scripts"
 echo "#!/bin/bash
