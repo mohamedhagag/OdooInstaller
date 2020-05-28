@@ -208,8 +208,8 @@ echo '{
 createdb zt${SFX}d1 &>/dev/null
 createdb zt${SFX}d2 &>/dev/null
 
-while $(ps aux | grep git | grep -v grep | grep $OGH &>/dev/null); do sleep 5; done
-while $(ps aux | grep wget | grep code | grep -v grep &>/dev/null); do sleep 5; done
+while $(ps aux | grep git | grep $OGH &>/dev/null); do sleep 5; done
+while $(ps aux | grep code | grep deb &>/dev/null); do sleep 5; done
 which code &>/dev/null && code $ODIR/.vscode/Odoo_${SFX}.code-workspace &
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>/dev/null \
