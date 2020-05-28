@@ -81,7 +81,7 @@ mkdir -p $BWS && cd $BWS || die "Can not create $BWS folder" 888
 mkdir -p $HOME/bin 
 cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>~/.bashrc
 
-echo -n "Updating system ... "
+echo "Updating system ... "
 sudo apt update &>/dev/null 
 # sudo apt -y dist-upgrade &>/dev/null && sayok
 
