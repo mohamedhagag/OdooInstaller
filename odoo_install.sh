@@ -79,20 +79,20 @@ mkdir -p $BWS && cd $BWS || die "Can not create $BWS folder" 888
 mkdir -p $HOME/bin 
 cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:$PATH" >>~/.bashrc
 
-# check if we have wkhtmltopdf or install it
-echo -n "Installing WKHTML2PDF ... "; which wkhtml2pdf &>/dev/null \
-  || ( ( ls ./wkhtml*deb &>/dev/null || wget $WKURL &>/dev/null ) && sudo apt -y install ./wkhtml*deb &>/dev/null ) \
-	&& sayok || die "can not install wkhtml2pdf" 777 
-
 # echo -n "Updating system ... "
 # sudo apt update &>/dev/null && sudo apt -y dist-upgrade &>/dev/null && sayok
 
 echo -n "Installing Dependencies ... "
-sudo apt install -y --no-install-recommends aptitude postgresql sassc node-less npm libxml2-dev curl libsasl2-dev \
+sudo apt install -y --no-install-recommends wget aptitude postgresql sassc node-less npm libxml2-dev curl libsasl2-dev \
  libldap2-dev libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
  build-essential &>/dev/null && sayok || die "can not install deps" 11 
 
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
+
+echo -n "Installing WKHTML2PDF ... "
+which wkhtml2pdf &>/dev/null \
+  || ( ( ls ./wkhtml*deb &>/dev/null || wget $WKURL &>/dev/null ) && sudo apt -y install ./wkhtml*deb &>/dev/null ) \
+	&& sayok || die "can not install wkhtml2pdf" 777 
 
 # link a folder to avoid an error in pip install lxml
 sudo ln -s /usr/include/libxml2/libxml /usr/include/ &>/dev/null
