@@ -249,7 +249,7 @@ while $(ps aux | grep git | grep odoo &>/dev/null); do sleep 5; done
 while $(ps aux | grep code | grep deb &>/dev/null); do sleep 5; done
 
 export vscext="Atishay-Jain.All-Autocomplete
-jeffery9.odoo-snippets
+jigar-patel.odoosnippets
 DotJoshJohnson.xml
 formulahendry.auto-close-tag
 formulahendry.auto-rename-tag
