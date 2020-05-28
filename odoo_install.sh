@@ -33,10 +33,10 @@ ${NC}"
 }
 
 sayok(){ 
-	echo -e "\t\t ${LGREEN} OK ${NC}" 
+	echo -e "\t\t\t\t ${LGREEN} OK ${NC}" 
 }
 sayfail(){ 
-	echo -e "\t\t ${LRED} Failed ${NC}" 
+	echo -e "\t\t\t\t ${LRED} Failed ${NC}" 
 }
 
 # check version
