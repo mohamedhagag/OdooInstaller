@@ -100,6 +100,7 @@ $aria2c -o wkhtml.deb "$WKURL" &>/dev/null &
 $aria2c -o vscode.deb "$CODE" &>/dev/null &
 
 echo "Cloning odoo git $VER ... "
+cd $ODIR || die "$ODIR"
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
 	|| die "can not download odoo sources" 45 &
 
