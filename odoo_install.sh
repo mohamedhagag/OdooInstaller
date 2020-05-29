@@ -96,8 +96,7 @@ $aria2c -o vscode.deb "$CODE" &>/dev/null &
 
 echo "Cloning odoo git $VER ... "
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
-	|| die "can not download odoo sources" 45 &
-cd $ODIR 
+	|| die "can not download odoo sources" 45 && cd $ODIR &
 
 echo -n "Installing Dependencies ... "
 sudo apt install -y --no-install-recommends postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
