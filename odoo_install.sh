@@ -89,7 +89,12 @@ sudo apt update &>/dev/null
 # sudo apt -y dist-upgrade &>/dev/null && sayok
 
 echo -n "Installing base tools ..."
-sudo apt install -y --no-install-recommends aria2 wget curl &>/dev/null && sayok || die "Failed"
+sudo apt install -y --no-install-recommends aria2 wget curl python3-{dev,pip,virtualenv} &>/dev/null && sayok || die "Failed"
+sudo apt -y install python3-virtualenvwrapper &>/dev/null
+
+echo -n "Creating venv $ODIR ... "
+[[ -d $ODIR ]] || ( virtualenv -p python3 $ODIR &>/dev/null && cd $ODIR && source $ODIR/bin/activate ) \
+		&& sayok || die "can not create venv" 33
 
 $aria2c -o wkhtml.deb "$WKURL" &>/dev/null &
 $aria2c -o vscode.deb "$CODE" &>/dev/null &
@@ -102,7 +107,6 @@ echo -n "Installing Dependencies ... "
 sudo apt install -y --no-install-recommends postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
  libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
  build-essential &>/dev/null && sayok || die "can not install deps" 11 
-sudo apt -y install python3-virtualenvwrapper &>/dev/null
 
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
@@ -118,10 +122,6 @@ echo -n "Installing rtlcss... "
 which rtlcss &>/dev/null && sayok \
 || ( sudo npm install -g rtlcss &>/dev/null && sayok )
 
-# create VirtualEnv and activate it
-echo -n "Creating venv $ODIR ... "
-[[ -d $ODIR ]] || ( virtualenv -p python3 $ODIR &>/dev/null && cd $ODIR && source $ODIR/bin/activate ) \
-		&& sayok || die "can not create venv" 33
 
 echo "Creating start/stop scripts"
 echo "#!/bin/bash
