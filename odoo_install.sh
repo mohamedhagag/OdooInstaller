@@ -94,6 +94,11 @@ sudo apt install -y --no-install-recommends aria2 wget curl &>/dev/null && sayok
 $aria2c -o wkhtml.deb "$WKURL" &>/dev/null &
 $aria2c -o vscode.deb "$CODE" &>/dev/null &
 
+echo "Cloning odoo git $VER ... "
+cd $ODIR 
+[[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
+	|| die "can not download odoo sources" 45 &
+
 echo -n "Installing Dependencies ... "
 sudo apt install -y --no-install-recommends postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
  libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
@@ -118,12 +123,6 @@ which rtlcss &>/dev/null && sayok \
 echo -n "Creating venv $ODIR ... "
 [[ -d $ODIR ]] || ( virtualenv -p python3 $ODIR &>/dev/null && cd $ODIR && source $ODIR/bin/activate ) \
 		&& sayok || die "can not create venv" 33
-
-# get odoo sources from github
-cd $ODIR 
-echo "Cloning odoo git $VER ... "
-[[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>/dev/null \
-	|| die "can not download odoo sources" 45 &
 
 echo "Creating start/stop scripts"
 echo "#!/bin/bash
