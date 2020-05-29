@@ -245,10 +245,10 @@ net.core.wmem_default = 262144
 net.core.wmem_max = 1048586
 " | sudo tee -a /etc/sysctl.conf &>/dev/null; sudo sysctl -p &>/dev/null
 
-ps aux | grep git | grep odoo && echo -n "Waiting for git clone ..."
+ps aux | grep git | grep odoo &>/dev/null && echo -n "Waiting for git clone ..."
 while $(ps aux | grep git | grep odoo &>/dev/null); do sleep 5; done
 sayok
-ps aux | grep code | grep deb && echo -n "Waiting for VSCode download ..."
+ps aux | grep code | grep deb &>/dev/null && echo -n "Waiting for VSCode download ..."
 while $(ps aux | grep code | grep deb &>/dev/null); do sleep 5; done
 sayok
 
