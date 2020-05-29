@@ -180,7 +180,7 @@ done < $RQF
 echo "Installing & Creating VSCode workspace ... "
 while $(ps aux | grep code | grep aria2 &>/dev/null); do sleep 5; done
 which code &>/dev/null \
-	|| sudo apt -y install $VSCF &>/dev/null || sudo apt -y install $VSCF &
+	|| sudo apt -y install $VSCF &>/dev/null || sudo apt -y install $VSCF 
 
 echo -n "Installing WKHTML2PDF ... "
 while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
