@@ -225,8 +225,7 @@ echo '{
 
 echo "PYTHONPATH=$ODIR/odoo" >$ODIR/.env
 
-createdb zt${SFX}d1 &>/dev/null
-createdb zt${SFX}d2 &>/dev/null
+psql -l | grep zt &>/dev/null || ( createdb ztdb1 &>/dev/null && createdb ztdb2 &>/dev/null)
 
 export shmmax=$(expr $(free | grep Mem | awk '{print $2}') / 2)000
 export shmall=$(expr $shmmax / 4096)
