@@ -96,8 +96,9 @@ echo -n "Creating venv $ODIR ... "
 [[ -d $ODIR ]] || ( virtualenv -p python3 $ODIR &>/dev/null && cd $ODIR && source $ODIR/bin/activate ) \
 		&& sayok || die "can not create venv" 33
 
-export WKF="$PWD/wkhtml.deb" && $aria2c -o wkhtml.deb "$WKURL" &>/dev/null &
-export VSCF="$PWD/vscode.deb" && $aria2c -o vscode.deb "$CODE" &>/dev/null &
+cd $BWS
+$aria2c -o wkhtml.deb "$WKURL" &>/dev/null &
+$aria2c -o vscode.deb "$CODE" &>/dev/null &
 
 echo "Cloning odoo git $VER ... "
 cd $ODIR || die "$ODIR"
@@ -180,12 +181,12 @@ done < $RQF
 echo "Installing & Creating VSCode workspace ... "
 while $(ps aux | grep code | grep aria2 &>/dev/null); do sleep 5; done
 which code &>/dev/null \
-	|| sudo apt -y install $VSCF &>/dev/null || sudo apt -y install $VSCF || die "Can not install VSCode"
+	|| sudo apt -y install $BWS/vscode.deb &>/dev/null || die "Can not install VSCode"
 
 echo -n "Installing WKHTML2PDF ... "
 while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
 which wkhtmltopdf &>/dev/null \
-  || ( sudo apt -y install $WKF &>/dev/null || sudo apt -y install $WKF ) \
+  || sudo apt -y install $BWS/wkhtml.deb &>/dev/null \
 	&& sayok || die "can not install wkhtml2pdf" 777 
 
 
