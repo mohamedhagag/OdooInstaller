@@ -144,9 +144,10 @@ echo "[options]
 addons_path = ./odoo/odoo/addons,./odoo/addons,./my_adds
 xmlrpc_port = 80$SFX
 longpolling_port = 70$SFX
-workers = 2
+limit_time_cpu = 1800
 limit_time_real = 3600
 log_file = ../Odoo.log
+workers = 2
 dev = all
 "> $ODIR/Odoo_$SFX.conf && mkdir -p $ODIR/my_adds
 
