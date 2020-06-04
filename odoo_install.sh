@@ -248,8 +248,8 @@ net.core.wmem_max = 1048586
 
 ps aux | grep git | grep odoo &>/dev/null && echo "Waiting for git clone ..."
 while $(ps aux | grep git | grep odoo &>/dev/null); do sleep 5; done
-ps aux | grep code | grep deb &>/dev/null && echo "Waiting for VSCode download ..."
-while $(ps aux | grep code | grep deb &>/dev/null); do sleep 5; done
+ps aux | grep -v grep | grep code.deb &>/dev/null && echo "Waiting for VSCode download ..."
+while $(ps aux | grep -v grep | grep code.deb  &>/dev/null); do sleep 5; done
 
 export vscext="Atishay-Jain.All-Autocomplete
 jigar-patel.odoosnippets
