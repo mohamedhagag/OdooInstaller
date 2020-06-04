@@ -230,7 +230,8 @@ psql -l | grep zt &>/dev/null || ( createdb ztdb1 &>/dev/null && createdb ztdb2 
 export shmmax=$(expr $(free | grep Mem | awk '{print $2}') / 2)000
 export shmall=$(expr $shmmax / 4096)
 
-echo "############ Odoo, Postgress & VSCode #########
+cat /etc/sysctl.conf | grep "kernel.shmmax = $shmmax" &>/dev/null \
+|| echo "############ Odoo, Postgress & VSCode #########
 fs.inotify.max_user_watches = 524288
 fs.aio-max-nr = 1048576
 fs.file-max = 6815744
