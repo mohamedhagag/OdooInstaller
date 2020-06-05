@@ -68,7 +68,6 @@ ${NC}" && read && sudo ls >/dev/null
 
 # only work on ubuntu
 # lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems supported" 999
-
 export aria2c='aria2c -c -x4 -s4'
 
 which apt &>/dev/null && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb"
@@ -100,6 +99,7 @@ echo -n "Creating venv $ODIR ... "
 
 cd $BWS
 which apt &>/dev/null && $aria2c -o wkhtml.deb "$WKURL" &>/dev/null &
+which dnf &>/dev/null && $aria2c -o wkhtml.rpm "$WKURL" &>/dev/null &
 #$aria2c -o vscode.deb "$CODE" &>/dev/null &
 
 echo "Cloning odoo git $VER ... "
@@ -108,22 +108,23 @@ cd $ODIR || die "$ODIR"
 	|| die "can not download odoo sources" 45 &
 
 echo -n "Installing Dependencies ... "
-which apt &>/dev/null && ( sudo apt install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
+which apt &>/dev/null && ( sudo apt install -y snap postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
  libxslt1-dev libjpeg8-dev libpq-dev cython3 python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
  build-essential &>/dev/null && sayok || die "can not install deps" 11 )
 
 # Fedora/CentOS
 which dnf &>/dev/null && ( sudo dnf install -y snapd postgresql{,-server} sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
  libxslt-devel libjpeg-turbo-devel libpq-devel python3-{devel,pip,virtualenv,Cython} gcc g++ make automake cmake autoconf \
-  &>/dev/null && sayok || die "can not install deps" 11 ) \
-  && ( sudo ls /var/lib/pgsql/initdb_postgresql.log &>/dev/null || \
-        ( sudo /usr/bin/postgresql-setup --initdb &>/dev/null && sudo systemctl enable --now postgresql &>/dev/null ) \
-    || die "Postgres setup failed" )
- 
-curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
+  &>/dev/null && sayok || die "can not install deps" 11 )
 
-# link a folder to avoid an error in pip install lxml
-sudo ln -sf /usr/include/libxml2/libxml /usr/include/ &>/dev/null
+which dnf && sudo ln -sf /var/lib/snapd/snap / &>/dev/null && export PATH=$PATH:/var/lib/snapd/snap/bin
+
+echo -n "Setting up postgres ..."
+sudo ls /var/lib/pgsql/initdb_postgresql.log &>/dev/null && sayok || \
+    ( sudo /usr/bin/postgresql-setup --initdb &>/dev/null && sudo systemctl enable --now postgresql &>/dev/null && sayok ) \
+     || die "Postgres setup failed"
+
+curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $USER ..."
 sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>/dev/null \
@@ -179,6 +180,9 @@ echo phonenumbers >> $RQF
 echo pyaml >> $RQF
 echo pylint >> $RQF
 
+# link a folder to avoid an error in pip install lxml
+sudo ln -sf /usr/include/libxml2/libxml /usr/include/ &>/dev/null
+
 echo "Installing Python libraries:"
 cd $ODIR && source ./bin/activate
 
@@ -191,21 +195,19 @@ while read line
 		
     done < $RQF
 
-echo -n "Installing & Creating VSCode workspace ... "
-sudo ln -s /var/lib/snapd/snap /snap &>/dev/null
-which code &>/dev/null && sayok \
-	|| ( which snap &>/dev/null && sudo snap install -y --classic code  &>/dev/null && sayok || die "Can not install VSCode" ) #\
-#	|| which flatpak &>/dev/null \
-#	&& ( sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo &>/dev/null \
-#            && flatpak update &>/dev/null && flatpak install -y com.visualstudio.code )
-#newgrp &>/dev/null
-
 echo -n "Installing WKHTML2PDF ... "
 while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
 which wkhtmltopdf &>/dev/null \
   || ( which apt &>/dev/null && sudo apt -y install $BWS/wkhtml.deb &>/dev/null \
-       || which dnf &>/dev/null && sudo dnf install -y $WKURL &>/dev/null ) \
+       || which dnf &>/dev/null && sudo dnf install -y $BWS/wkhtml.rpm &>/dev/null ) \
   && sayok || die "can not install wkhtml2pdf" 777 
+
+echo "Installing & Creating VSCode workspace ... "
+sudo systemctl enable --now snapd &>/dev/null
+which code &>/dev/null \
+	|| ( which snap &>/dev/null && ( \
+                sudo snap install --classic code &>/dev/null || sudo snap install --classic code &>/dev/null \
+                ) || die "Can not install VSCode" )
 
 mkdir -p $ODIR/.vscode
 
@@ -266,8 +268,6 @@ net.core.wmem_max = 1048586
 
 ps aux | grep git | grep odoo &>/dev/null && echo "Waiting for git clone ..."
 while $(ps aux | grep git | grep odoo &>/dev/null); do sleep 5; done
-ps aux | grep -v grep | grep code.deb &>/dev/null && echo "Waiting for VSCode download ..."
-while $(ps aux | grep -v grep | grep code.deb  &>/dev/null); do sleep 5; done
 
 export vscext="Atishay-Jain.All-Autocomplete
 jigar-patel.odoosnippets
@@ -287,7 +287,7 @@ Zignd.html-css-class-completion
 "
 echo "Setting some vscode extensions"
 for ext in $vscext; do code --install-extension $ext &>/dev/null ; done
-which code &>/dev/null && code $ODIR/.vscode/Odoo_${SFX}.code-workspace &
+which code &>/dev/null && code $ODIR/.vscode/Odoo_${SFX}.code-workspace &>/dev/null &
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>/dev/null \
 && echo -e "${LGREEN}
