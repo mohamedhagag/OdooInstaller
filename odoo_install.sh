@@ -193,7 +193,7 @@ while read line
 		echo -n " - Installing $LMSG : "
 		pip install "$line" &>/dev/null && sayok \
 		|| ( sayfail && die "$LMSG library install error" )
-		
+		sudo ls &>/dev/null # To avoid asking for passwd again
     done < $RQF
 
 echo -n "Installing WKHTML2PDF ... "
