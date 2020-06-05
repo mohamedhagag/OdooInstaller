@@ -71,11 +71,11 @@ lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems suppor
 
 export aria2c='aria2c -c -x4 -s4'
 
-export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb"
+which apt &>/dev/null && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb"
+which dnf &>/dev/null && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
 export OGH="https://github.com/odoo/odoo"
 export REQ="https://raw.githubusercontent.com/odoo/odoo/master/requirements.txt"
 export RQF=$(mktemp)
-export CODE="https://go.microsoft.com/fwlink/?LinkID=760868"
 
 # create workspace dir
 mkdir -p $BWS && cd $BWS || die "Can not create $BWS folder" 888
@@ -85,12 +85,14 @@ mkdir -p $HOME/bin
 cat ~/.bashrc | grep "~/bin\|HOME/bin" &>/dev/null || echo "PATH=~/bin:\$PATH" >>~/.bashrc
 
 echo "Updating system ... "
-sudo apt update &>/dev/null 
+which apt &>/dev/null && sudo apt update &>/dev/null 
 # sudo apt -y dist-upgrade &>/dev/null && sayok
 
 echo -n "Installing base tools ..."
-sudo apt install -y --no-install-recommends aria2 wget curl python3-{dev,pip,virtualenv} &>/dev/null && sayok || die "Failed"
-sudo apt -y install python3-virtualenvwrapper &>/dev/null
+which apt &>/dev/null && ( sudo apt install -y --no-install-recommends aria2 wget curl python3-{dev,pip,virtualenv} &>/dev/null && sayok || die "Failed" )
+which apt &>/dev/null && sudo apt -y install python3-virtualenvwrapper &>/dev/null
+# Fedora/CentOS
+which dnf &>/dev/null && ( sudo dnf install -y aria2 wget curl python3-{devel,pip,virtualenvwrapper} snapd &>/dev/null && sayok || die "Failed" )
 
 echo -n "Creating venv $ODIR ... "
 [[ -d $ODIR ]] || ( virtualenv -p python3 $ODIR &>/dev/null && cd $ODIR && source $ODIR/bin/activate ) \
@@ -106,9 +108,9 @@ cd $ODIR || die "$ODIR"
 	|| die "can not download odoo sources" 45 &
 
 echo -n "Installing Dependencies ... "
-sudo apt install -y --no-install-recommends postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
+which apt &>/dev/null && ( sudo apt install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
  libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
- build-essential &>/dev/null && sayok || die "can not install deps" 11 
+ build-essential &>/dev/null && sayok || die "can not install deps" 11 )
 
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
