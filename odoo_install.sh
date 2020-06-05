@@ -67,7 +67,7 @@ Press Enter to continue or CTRL+C to exit :
 ${NC}" && read && sudo ls >/dev/null
 
 # only work on ubuntu
-lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems supported" 999
+# lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems supported" 999
 
 export aria2c='aria2c -c -x4 -s4'
 
@@ -99,7 +99,7 @@ echo -n "Creating venv $ODIR ... "
 		&& sayok || die "can not create venv" 33
 
 cd $BWS
-$aria2c -o wkhtml.deb "$WKURL" &>/dev/null &
+which apt &>/dev/null && $aria2c -o wkhtml.deb "$WKURL" &>/dev/null &
 #$aria2c -o vscode.deb "$CODE" &>/dev/null &
 
 echo "Cloning odoo git $VER ... "
@@ -113,9 +113,10 @@ which apt &>/dev/null && ( sudo apt install -y postgresql sassc node-less npm li
  build-essential &>/dev/null && sayok || die "can not install deps" 11 )
 
 # Fedora/CentOS
-which dnf &>/dev/null && ( sudo dnf install -y snapd postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
- libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
- build-essential &>/dev/null && sayok || die "can not install deps" 11 )
+which dnf &>/dev/null && ( sudo dnf install -y snapd postgresql{,-server} sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
+ libxslt-devel libjpeg-turbo-devel libpq-devel python3-{devel,pip,virtualenv} gcc g++ make automake cmake autoconf \
+  &>/dev/null && sayok || die "can not install deps" 11 ) \
+  && ( sudo /usr/bin/postgresql-setup --initdb &>/dev/null && sudo systemctl enable --now postgresql || die "Postgres setup failed" )
  
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
