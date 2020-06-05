@@ -95,7 +95,7 @@ which apt &>/dev/null && sudo apt -y install python3-virtualenvwrapper &>/dev/nu
 which dnf &>/dev/null && ( sudo dnf install -y aria2 wget curl python3-{devel,pip,virtualenvwrapper} snapd &>/dev/null && sayok || die "Failed" )
 
 echo -n "Creating venv $ODIR ... "
-[[ -d $ODIR ]] || ( virtualenv -p python3 $ODIR &>/dev/null && cd $ODIR && source $ODIR/bin/activate ) \
+[[ -d $ODIR ]] || ( python3 -m virtualenv $ODIR &>/dev/null && cd $ODIR && source $ODIR/bin/activate ) \
 		&& sayok || die "can not create venv" 33
 
 cd $BWS
