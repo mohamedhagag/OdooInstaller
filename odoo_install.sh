@@ -123,7 +123,7 @@ which dnf &>/dev/null && ( sudo dnf install -y snapd postgresql{,-server} sassc 
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
 # link a folder to avoid an error in pip install lxml
-sudo ln -s /usr/include/libxml2/libxml /usr/include/ &>/dev/null
+sudo ln -sf /usr/include/libxml2/libxml /usr/include/ &>/dev/null
 
 echo -n "Creating postgres user for $USER ..."
 sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>/dev/null \
@@ -192,13 +192,13 @@ while read line
     done < $RQF
 
 echo -n "Installing & Creating VSCode workspace ... "
-sudo ln -s /var/lib/snapd/snap /snap
-which code &>/dev/null \
-	|| which snap &>/dev/null && ( sudo snap install -y --classic code  &>/dev/null && sayok || die "Can not install VSCode" ) #\
+sudo ln -s /var/lib/snapd/snap /snap &>/dev/null
+which code &>/dev/null && sayok \
+	|| ( which snap &>/dev/null && sudo snap install -y --classic code  &>/dev/null && sayok || die "Can not install VSCode" ) #\
 #	|| which flatpak &>/dev/null \
 #	&& ( sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo &>/dev/null \
 #            && flatpak update &>/dev/null && flatpak install -y com.visualstudio.code )
-newgrp &>/dev/null
+#newgrp &>/dev/null
 
 echo -n "Installing WKHTML2PDF ... "
 while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
