@@ -9,73 +9,72 @@ export BWS="$HOME/workspace"		 # Base workspace folder default ~/workspace
 export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
 
 ##################### Do Not make changes below this line #####################
+echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or master" 9999 # Check version arg
+{ #exports
+	export aria2c='aria2c -c -x4 -s4'
+	export OGH="https://github.com/odoo/odoo"
+	export REQ="https://raw.githubusercontent.com/odoo/odoo/master/requirements.txt"
+	export RQF=$(mktemp)
+	export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster"
 
-#Colors - ref: https://stackoverflow.com/a/5947802
-export RED='\033[0;31m'
-export GREEN='\033[0;32m'
-export BLUE='\033[0;34m'
-export LRED='\033[1;31m'
-export LGREEN='\033[1;32m'
-export LBLUE='\033[1;34m'
-export NC='\033[0m' # No Color
+	which apt &>/dev/null && export DIST=$(lsb_release -c | awk '{print $3}')
+	echo $DISTS | grep -i $DIST &>/dev/null || export DIST=bionic
+	which apt &>/dev/null && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
+	which dnf &>/dev/null && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
+}
 
-# function to print a mgs, kill the script & exit
-die(){
+{ #Colors - ref: https://stackoverflow.com/a/5947802
+	export RED='\033[0;31m'
+	export GREEN='\033[0;32m'
+	export BLUE='\033[0;34m'
+	export LRED='\033[1;31m'
+	export LGREEN='\033[1;32m'
+	export LBLUE='\033[1;34m'
+	export NC='\033[0m' # No Color
+}
+
+die(){ # Function to print an error and kill the script
 	export MSG=$1; export ERR=$2; 
 	echo -e "${LRED}Error: $MSG ${NC}" #error msg
 	echo -e "${LRED}
-Something went wrong ...
+	Something went wrong ...
 	Plz check the previous messages for errors
 	and try re-running the installation again.
 	You may delete $ODIR before restarting.
-${NC}"
+	${NC}"
 	[[ -n $ERR ]] && exit $ERR || exit 9
 }
 
 sayok(){ 
 	echo -e "${LGREEN} OK ${NC}" 
 }
-sayfail(){ 
-	echo -e "${LRED} Failed ${NC}" 
+
+{ # Intro
+	echo -e "${LBLUE}
+	#############################################################
+	#  Welcome to Odoo installer script by 
+	#  ${LGREEN}Mohamed M. Hagag https://linkedin.com/in/mohamedhagag${LBLUE}
+	#  released under GPL3 License
+	#-----------------------------------------------------------
+	#  ${LRED}Caution: This script For development use only
+	#         And should not used for production use.${LBLUE}
+	#  This should work on ${LGREEN}Ubuntu 18.04+, Debian 9+ & Fedora 30+.${LBLUE}
+	#  You can set odoo version by calling ${NC}$0 \${VER}$LBLUE
+	#  for ex. $NC# $0 14.0 ${LBLUE}to install odoo v 14.0
+	#-----------------------------------------------------------
+	#  Now we will install Odoo v.${LRED} $VER $LBLUE
+	#  In$LGREEN $BWS/Odoo_$SFX $LBLUE
+	#  On success:
+	#  - you can re/start odoo by running Odoo_Start_$SFX
+	#  - stop odoo by running Odoo_Stop_$SFX
+	#  - Odoo config file $LGREEN $ODIR/Odoo_$SFX.conf $LBLUE
+	#  - Odoo  will be running on$LRED http://localhost:80$SFX $LBLUE
+	#  - VSCode will be installed and configured for Odoo Dev
+	############################################################
+
+	Press Enter to continue or CTRL+C to exit :
+	${NC}" && read && sudo ls >/dev/null
 }
-
-# check version
-echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or master" 9999
-
-echo -e "${LBLUE}
-#############################################################
-#  Welcome to Odoo installer script by 
-#  ${LGREEN}Mohamed M. Hagag https://linkedin.com/in/mohamedhagag${LBLUE}
-#  released under GPL3 License
-#-----------------------------------------------------------
-#  ${LRED}Caution: This script For development use only
-#         And should not used for production use.${LBLUE}
-#  This should work on ${LGREEN}Ubuntu variants, Debian & Fedora.${LBLUE}
-#  You can set odoo version by calling ${NC}$0 \${VER}$LBLUE
-#  for ex. $NC# $0 14.0 ${LBLUE}to install odoo v 14.0
-#-----------------------------------------------------------
-#  Now we will install Odoo v.${LRED} $VER $LBLUE
-#  In$LGREEN $BWS/Odoo_$SFX $LBLUE
-#  On success:
-#  - you can re/start odoo by running Odoo_Start_$SFX
-#  - stop odoo by running Odoo_Stop_$SFX
-#  - Odoo config file $LGREEN $ODIR/Odoo_$SFX.conf $LBLUE
-#  - Odoo  will be running on$LRED http://localhost:80$SFX $LBLUE
-#  - VSCode will be installed and configured for Odoo Dev
-############################################################
-
-Press Enter to continue or CTRL+C to exit :
-${NC}" && read && sudo ls >/dev/null
-
-# only work on ubuntu
-# lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems supported" 999
-export aria2c='aria2c -c -x4 -s4'
-export OGH="https://github.com/odoo/odoo"
-export REQ="https://raw.githubusercontent.com/odoo/odoo/master/requirements.txt"
-export RQF=$(mktemp)
-
-which apt &>/dev/null && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb"
-which dnf &>/dev/null && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
 
 # create workspace dir
 mkdir -p $BWS && cd $BWS || die "Can not create $BWS folder" 888
@@ -192,7 +191,7 @@ while read line
 		export LMSG=$(echo "$line" | awk '{print $1}')
 		echo -n " - Installing $LMSG : "
 		pip install "$line" &>/dev/null && sayok \
-		|| ( sayfail && die "$LMSG library install error" )
+		|| ( die "$LMSG library install error" )
 		sudo ls &>/dev/null # To avoid asking for passwd again
     done < $RQF
 
