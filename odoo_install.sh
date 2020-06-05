@@ -110,7 +110,7 @@ cd $ODIR || die "$ODIR"
 
 echo -n "Installing Dependencies ... "
 which apt &>/dev/null && ( sudo apt install -y snap postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
- libxslt1-dev libjpeg8-dev libpq-dev cython3 python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
+ libxslt1-dev libjpeg-dev libpq-dev cython3 python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
  build-essential &>/dev/null && sayok || die "can not install deps" 11 )
 
 # Fedora/CentOS
