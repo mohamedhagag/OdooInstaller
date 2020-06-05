@@ -48,8 +48,9 @@ echo -e "${LBLUE}
 #  ${LGREEN}Mohamed M. Hagag https://linkedin.com/in/mohamedhagag${LBLUE}
 #  released under GPL3 License
 #-----------------------------------------------------------
-#  ${LRED}Caution: This script For development use only${LBLUE}
-#  Not for production use, and works with ubuntu 19.10+
+#  ${LRED}Caution: This script For development use only
+#         And should not used for production use.${LBLUE}
+#  This should work on ${LGREEN}Ubuntu variants, Debian & Fedora.${LBLUE}
 #  You can set odoo version by calling ${NC}$0 \${VER}$LBLUE
 #  for ex. $NC# $0 14.0 ${LBLUE}to install odoo v 14.0
 #-----------------------------------------------------------
