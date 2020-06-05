@@ -117,12 +117,12 @@ which dnf &>/dev/null && ( sudo dnf install -y snapd postgresql{,-server} sassc 
  libxslt-devel libjpeg-turbo-devel libpq-devel python3-{devel,pip,virtualenv,Cython} gcc g++ make automake cmake autoconf \
   &>/dev/null && sayok || die "can not install deps" 11 )
 
-which dnf && sudo ln -sf /var/lib/snapd/snap / &>/dev/null && export PATH=$PATH:/var/lib/snapd/snap/bin
+which dnf &>/dev/null && sudo ln -sf /var/lib/snapd/snap / &>/dev/null && export PATH=$PATH:/var/lib/snapd/snap/bin
 
-echo -n "Setting up postgres ..."
-sudo ls /var/lib/pgsql/initdb_postgresql.log &>/dev/null && sayok || \
+which dnf &>/dev/null && echo -n "Setting up postgres ..."
+which dnf &>/dev/null && ( sudo ls /var/lib/pgsql/initdb_postgresql.log &>/dev/null && sayok || \
     ( sudo /usr/bin/postgresql-setup --initdb &>/dev/null && sudo systemctl enable --now postgresql &>/dev/null && sayok ) \
-     || die "Postgres setup failed"
+     || die "Postgres setup failed" )
 
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
