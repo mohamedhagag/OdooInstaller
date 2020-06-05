@@ -124,6 +124,13 @@ which dnf &>/dev/null && ( sudo ls /var/lib/pgsql/initdb_postgresql.log &>/dev/n
     ( sudo /usr/bin/postgresql-setup --initdb &>/dev/null && sudo systemctl enable --now postgresql &>/dev/null && sayok ) \
      || die "Postgres setup failed" )
 
+echo "Installing & Creating VSCode workspace ... "
+sudo systemctl enable --now snapd &>/dev/null
+which code &>/dev/null \
+	|| ( which snap &>/dev/null && ( \
+                sudo snap install --classic code &>/dev/null || sudo snap install --classic code &>/dev/null \
+                ) || die "Can not install VSCode" ) &
+
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $USER ..."
@@ -201,13 +208,6 @@ which wkhtmltopdf &>/dev/null && sayok \
   || ( which apt &>/dev/null && sudo apt -y install $BWS/wkhtml.deb &>/dev/null ) \
   || ( which dnf &>/dev/null && sudo dnf install -y $BWS/wkhtml.rpm &>/dev/null ) \
   && sayok || die "can not install wkhtml2pdf" 777 
-
-echo "Installing & Creating VSCode workspace ... "
-sudo systemctl enable --now snapd &>/dev/null
-which code &>/dev/null \
-	|| ( which snap &>/dev/null && ( \
-                sudo snap install --classic code &>/dev/null || sudo snap install --classic code &>/dev/null \
-                ) || die "Can not install VSCode" )
 
 mkdir -p $ODIR/.vscode
 
