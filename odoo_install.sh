@@ -206,9 +206,11 @@ while read line
 echo -n "Installing WKHTML2PDF ... "
 while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
 which wkhtmltopdf &>/dev/null && sayok \
-  || ( which apt &>/dev/null && sudo apt -y install $BWS/wkhtml.deb &>/dev/null ) \
-  || ( which dnf &>/dev/null && sudo dnf install -y $BWS/wkhtml.rpm &>/dev/null ) \
-  && sayok || die "can not install wkhtml2pdf" 777 
+  || ( \
+  		( which apt &>/dev/null && sudo apt -y install $BWS/wkhtml.deb &>/dev/null ) \
+  		|| ( which dnf &>/dev/null && sudo dnf install -y $BWS/wkhtml.rpm &>/dev/null ) \
+  		&& sayok \
+  	) || die "can not install wkhtml2pdf" 777 
 
 mkdir -p $ODIR/.vscode
 
