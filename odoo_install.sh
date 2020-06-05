@@ -89,7 +89,7 @@ which apt &>/dev/null && sudo apt update &>/dev/null
 # sudo apt -y dist-upgrade &>/dev/null && sayok
 
 echo -n "Installing base tools ..."
-which apt &>/dev/null && ( sudo apt install -y --no-install-recommends aria2 wget curl python3-{dev,pip,virtualenv} &>/dev/null && sayok || die "Failed" )
+which apt &>/dev/null && ( sudo apt install -y --no-install-recommends snapd aria2 wget curl python3-{dev,pip,virtualenv} &>/dev/null && sayok || die "Failed" )
 which apt &>/dev/null && sudo apt -y install python3-virtualenvwrapper &>/dev/null
 # Fedora/CentOS
 which dnf &>/dev/null && ( sudo dnf install -y aria2 wget curl python3-{devel,pip,virtualenvwrapper} snapd &>/dev/null && sayok || die "Failed" )
@@ -100,7 +100,7 @@ echo -n "Creating venv $ODIR ... "
 
 cd $BWS
 $aria2c -o wkhtml.deb "$WKURL" &>/dev/null &
-$aria2c -o vscode.deb "$CODE" &>/dev/null &
+#$aria2c -o vscode.deb "$CODE" &>/dev/null &
 
 echo "Cloning odoo git $VER ... "
 cd $ODIR || die "$ODIR"
@@ -112,6 +112,11 @@ which apt &>/dev/null && ( sudo apt install -y postgresql sassc node-less npm li
  libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
  build-essential &>/dev/null && sayok || die "can not install deps" 11 )
 
+# Fedora/CentOS
+which dnf &>/dev/null && ( sudo dnf install -y snapd postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
+ libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
+ build-essential &>/dev/null && sayok || die "can not install deps" 11 )
+ 
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
 # link a folder to avoid an error in pip install lxml
@@ -181,19 +186,24 @@ while read line
 		|| ( sayfail && die "$LMSG library install error" )
 done < $RQF
 
-echo "Installing & Creating VSCode workspace ... "
-while $(ps aux | grep code | grep aria2 &>/dev/null); do sleep 5; done
+echo -n "Installing & Creating VSCode workspace ... "
+sudo ln -s /var/lib/snapd/snap /snap
 which code &>/dev/null \
-	|| sudo apt -y install $BWS/vscode.deb &>/dev/null || die "Can not install VSCode"
+	|| which snap &>/dev/null && ( sudo snap install -y --classic code  &>/dev/null && sayok || die "Can not install VSCode" ) #\
+#	|| which flatpak &>/dev/null \
+#	&& ( sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo &>/dev/null \
+#            && flatpak update &>/dev/null && flatpak install -y com.visualstudio.code )
+newgrp &>/dev/null
 
 echo -n "Installing WKHTML2PDF ... "
 while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
 which wkhtmltopdf &>/dev/null \
-  || sudo apt -y install $BWS/wkhtml.deb &>/dev/null \
-	&& sayok || die "can not install wkhtml2pdf" 777 
-
+  || ( which apt &>/dev/null && sudo apt -y install $BWS/wkhtml.deb &>/dev/null \
+       || which dnf &>/dev/null && sudo dnf install -y $WKURL &>/dev/null ) \
+  && sayok || die "can not install wkhtml2pdf" 777 
 
 mkdir -p $ODIR/.vscode
+
 echo '{
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
