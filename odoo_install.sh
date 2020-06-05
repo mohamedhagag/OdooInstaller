@@ -109,14 +109,16 @@ cd $ODIR || die "$ODIR"
 
 echo -n "Installing Dependencies ... "
 which apt &>/dev/null && ( sudo apt install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
- libxslt1-dev libjpeg8-dev libpq-dev python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
+ libxslt1-dev libjpeg8-dev libpq-dev cython3 python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
  build-essential &>/dev/null && sayok || die "can not install deps" 11 )
 
 # Fedora/CentOS
 which dnf &>/dev/null && ( sudo dnf install -y snapd postgresql{,-server} sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
- libxslt-devel libjpeg-turbo-devel libpq-devel python3-{devel,pip,virtualenv} gcc g++ make automake cmake autoconf \
+ libxslt-devel libjpeg-turbo-devel libpq-devel python3-{devel,pip,virtualenv,Cython} gcc g++ make automake cmake autoconf \
   &>/dev/null && sayok || die "can not install deps" 11 ) \
-  && ( sudo /usr/bin/postgresql-setup --initdb &>/dev/null && sudo systemctl enable --now postgresql || die "Postgres setup failed" )
+  && ( sudo ls /var/lib/pgsql/initdb_postgresql.log &>/dev/null || \
+        ( sudo /usr/bin/postgresql-setup --initdb &>/dev/null && sudo systemctl enable --now postgresql &>/dev/null ) \
+    || die "Postgres setup failed" )
  
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
@@ -179,13 +181,15 @@ echo pylint >> $RQF
 
 echo "Installing Python libraries:"
 cd $ODIR && source ./bin/activate
+
 while read line 
 	do 
 		export LMSG=$(echo "$line" | awk '{print $1}')
 		echo -n " - Installing $LMSG : "
 		pip install "$line" &>/dev/null && sayok \
 		|| ( sayfail && die "$LMSG library install error" )
-done < $RQF
+		
+    done < $RQF
 
 echo -n "Installing & Creating VSCode workspace ... "
 sudo ln -s /var/lib/snapd/snap /snap
