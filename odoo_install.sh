@@ -69,12 +69,12 @@ ${NC}" && read && sudo ls >/dev/null
 # only work on ubuntu
 # lsb_release -d | grep -i "ubuntu" &>/dev/null || die "Only Ubuntu systems supported" 999
 export aria2c='aria2c -c -x4 -s4'
-
-which apt &>/dev/null && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb"
-which dnf &>/dev/null && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
 export OGH="https://github.com/odoo/odoo"
 export REQ="https://raw.githubusercontent.com/odoo/odoo/master/requirements.txt"
 export RQF=$(mktemp)
+
+which apt &>/dev/null && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb"
+which dnf &>/dev/null && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
 
 # create workspace dir
 mkdir -p $BWS && cd $BWS || die "Can not create $BWS folder" 888
