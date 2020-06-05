@@ -17,7 +17,7 @@ echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or
 	export RQF=$(mktemp)
 	export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster"
 
-	which apt &>/dev/null && export DIST=$(lsb_release -c | awk '{print $3}')
+	which apt &>/dev/null && export DIST=$(lsb_release -c | awk '{print $2}')
 	echo $DISTS | grep -i $DIST &>/dev/null || export DIST=bionic
 	which apt &>/dev/null && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
 	which dnf &>/dev/null && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
