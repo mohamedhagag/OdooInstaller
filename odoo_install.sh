@@ -51,6 +51,7 @@ sayok(){
 }
 
 { # Intro
+	touch $LOGFILE
 	echo -e "${LBLUE}
 	#############################################################
 	#  Welcome to Odoo installer script by 
@@ -138,7 +139,7 @@ curl $REQ > $RQF 2>$LOGFILE || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $USER ..."
 sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>>$LOGFILE \
-&& sayok || ( sudo su -l postgres -c "createuser -d $USER &>>$LOGFILE" && sayok )
+&& sayok || ( sudo su -l postgres -c "createuser -d $USER " &>>$LOGFILE && sayok )
 
 # install rtlcss requored for RTL support in Odoo
 echo -n "Installing rtlcss... "
@@ -291,7 +292,7 @@ vscode-icons-team.vscode-icons
 Zignd.html-css-class-completion
 "
 echo "Setting some vscode extensions"
-for ext in $vscext; do code --list-extensions | grep $ext &>>$LOGFILE || code --install-extension $ext &>>$LOGFILE ; done
+for ext in $vscext; do code --list-extensions | grep $ext &>>$LOGFILE || code --install-extension $ext 2>&1>>$LOGFILE ; done
 which code &>>$LOGFILE && code $ODIR/.vscode/Odoo_${SFX}.code-workspace &>>$LOGFILE &
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>>$LOGFILE \
