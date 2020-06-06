@@ -9,7 +9,6 @@ export BWS="$HOME/workspace"		 # Base workspace folder default ~/workspace
 export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
 
 ##################### Do Not make changes below this line #####################
-echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or master" 9999 # Check version arg
 { #exports
 	export LOGFILE="$HOME/OdooInstaller.log"
 	export aria2c='aria2c -c -x4 -s4'
@@ -49,6 +48,8 @@ die(){ # Function to print an error and kill the script
 sayok(){ 
 	echo -e "${LGREEN} OK ${NC}" 
 }
+
+echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or master" 9999 # Check version arg
 
 { # Intro
 	touch $LOGFILE
