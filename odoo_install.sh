@@ -75,7 +75,7 @@ sayok(){
 	############################################################
 
 	Press Enter to continue or CTRL+C to exit :
-	${NC}" | tee -a $LOGFILE && read && sudo ls >$LOGFILE
+	${NC}" | tee -a $LOGFILE && read && sudo ls &>/dev/null
 }
 while :; do sleep 10; sudo ls &>/dev/null; done & # to avoid asking for passwd again
 
@@ -128,14 +128,14 @@ which dnf &>>$LOGFILE && ( sudo ls /var/lib/pgsql/initdb_postgresql.log &>>$LOGF
     ( sudo /usr/bin/postgresql-setup --initdb &>>$LOGFILE && sudo systemctl enable --now postgresql &>>$LOGFILE && sayok ) \
      || die "Postgres setup failed" )
 
-echo "Installing & Creating VSCode workspace ... "
-sudo systemctl enable --now snapd &>>$LOGFILE
-which code &>>$LOGFILE \
-	|| ( which snap &>>$LOGFILE && ( \
-                sudo snap install --classic code &>>$LOGFILE || sudo snap install --classic code &>>$LOGFILE \
-                ) || die "Can not install VSCode" ) &
+inst_vsc(){
+	echo "Installing & Creating VSCode workspace ... "
+	sudo systemctl enable --now snapd 
+	which code || ( which snap && ( sudo snap install --classic code || sudo snap install --classic code ) || die "Can not install VSCode" )
+}
+inst_vsc &>>$LOGFILE &
 
-curl $REQ > $RQF 2>$LOGFILE || die "can not get $REQ " 22
+curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $USER ..."
 sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>>$LOGFILE \
@@ -150,7 +150,7 @@ which rtlcss &>>$LOGFILE && sayok \
 echo "Creating start/stop scripts"
 echo "#!/bin/bash
 find $ODIR/ -type f -name \"*pyc\" -delete
-for prc in \$(ps aux | grep -v grep | grep -i \$(basename $ODIR) | grep python | awk '{print \$2}'); do kill -9 \$prc &>>$LOGFILE; done
+for prc in \$(ps aux | grep -v grep | grep -i \$(basename $ODIR) | grep python | awk '{print \$2}'); do kill -9 \$prc &>/dev/null; done
 cd $ODIR && source bin/activate && ./odoo/odoo-bin -c ./Odoo_$SFX.conf \$@
 " > $ODIR/.start.sh \
 	&& chmod u+x $ODIR/.start.sh \
@@ -203,11 +203,11 @@ while read line
 		echo -n " - Installing $LMSG : "
 		pip install "$line" &>>$LOGFILE && sayok \
 		|| ( die "$LMSG library install error" )
-		sudo ls &>>$LOGFILE # To avoid asking for passwd again
+		sudo ls &>/dev/null # To avoid asking for passwd again
     done < $RQF
 
 echo -n "Installing WKHTML2PDF ... "
-while $(ps aux | grep wkhtml | grep aria2 &>>$LOGFILE); do sleep 5; done
+while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
 which wkhtmltopdf &>>$LOGFILE && sayok \
   || ( \
   		( which apt &>>$LOGFILE && sudo apt -y install $BWS/wkhtml.deb &>>$LOGFILE ) \
@@ -293,8 +293,9 @@ vscode-icons-team.vscode-icons
 Zignd.html-css-class-completion
 "
 echo "Setting some vscode extensions"
+while $(ps aux | grep snap | grep install | grep code); do sleep 5; done
 for ext in $vscext; do code --list-extensions | grep $ext || code --install-extension $ext ; done
-which code && code $ODIR/.vscode/Odoo_${SFX}.code-workspace
+code $ODIR/.vscode/Odoo_${SFX}.code-workspace
 }
 inst_vsc_exts &>>$LOGFILE
 
