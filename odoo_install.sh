@@ -275,6 +275,7 @@ net.core.wmem_max = 1048586
 ps aux | grep git | grep odoo &>>$LOGFILE && echo "Waiting for git clone ..."
 while $(ps aux | grep git | grep odoo &>>$LOGFILE); do sleep 5; done
 
+inst_vsc_exts(){
 export vscext="Atishay-Jain.All-Autocomplete
 jigar-patel.odoosnippets
 coenraads.bracket-pair-colorizer
@@ -292,8 +293,10 @@ vscode-icons-team.vscode-icons
 Zignd.html-css-class-completion
 "
 echo "Setting some vscode extensions"
-for ext in $vscext; do code --list-extensions | grep $ext &>/dev/null || code --install-extension $ext &>/dev/null ; done
-which code &>>$LOGFILE && code $ODIR/.vscode/Odoo_${SFX}.code-workspace &>>$LOGFILE &
+for ext in $vscext; do code --list-extensions | grep $ext || code --install-extension $ext ; done
+which code && code $ODIR/.vscode/Odoo_${SFX}.code-workspace
+}
+inst_vsc_exts &>>$LOGFILE
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>>$LOGFILE \
 && echo -e "${LGREEN}
