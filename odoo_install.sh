@@ -11,7 +11,7 @@ export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
 ##################### Do Not make changes below this line #####################
 echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or master" 9999 # Check version arg
 { #exports
-	export LOGFILE=../OdooInstaller.log
+	export LOGFILE="~/OdooInstaller.log"
 	export aria2c='aria2c -c -x4 -s4'
 	export OGH="https://github.com/odoo/odoo"
 	export REQ="https://raw.githubusercontent.com/odoo/odoo/master/requirements.txt"
