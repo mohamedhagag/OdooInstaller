@@ -84,7 +84,7 @@ mkdir -p $BWS && cd $BWS || die "Can not create $BWS folder" 888
 
 # create user's bin and add it to $PATH
 mkdir -p $HOME/bin 
-cat ~/.bashrc | grep "~/bin\|HOME/bin" &>>$LOGFILE || echo "PATH=~/bin:\$PATH" >>~/.bashrc
+cat ~/.bashrc | grep "~/bin\|HOME/bin" &>>$LOGFILE || echo "PATH=~/bin:\$PATH:/snap/bin" >>~/.bashrc
 
 echo "Updating system ... "
 which apt &>>$LOGFILE && sudo apt update &>>$LOGFILE 
