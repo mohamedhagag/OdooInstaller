@@ -150,7 +150,7 @@ vscode-icons-team.vscode-icons
 Zignd.html-css-class-completion
 "
 for ext in $vscext; do code --list-extensions | grep $ext || code --install-extension $ext ; done
-code $ODIR/.vscode/Odoo_${SFX}.code-workspace
+
 }
 inst_vsc &>>$LOGFILE &
 
@@ -293,6 +293,8 @@ net.core.wmem_max = 1048586
 
 ps aux | grep git | grep odoo &>>$LOGFILE && echo "Waiting for git clone ..."
 while $(ps aux | grep git | grep odoo &>>$LOGFILE); do sleep 5; done
+
+code $ODIR/.vscode/Odoo_${SFX}.code-workspace
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>>$LOGFILE \
 && echo -e "${LGREEN}
