@@ -292,7 +292,7 @@ vscode-icons-team.vscode-icons
 Zignd.html-css-class-completion
 "
 echo "Setting some vscode extensions"
-for ext in $vscext; do code --list-extensions | grep $ext &>>$LOGFILE || code --install-extension $ext 2>&1>>$LOGFILE ; done
+for ext in $vscext; do code --list-extensions | grep $ext &>/dev/null || code --install-extension $ext &>/dev/null ; done
 which code &>>$LOGFILE && code $ODIR/.vscode/Odoo_${SFX}.code-workspace &>>$LOGFILE &
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>>$LOGFILE \
