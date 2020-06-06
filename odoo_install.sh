@@ -128,8 +128,8 @@ which dnf &>>$LOGFILE && ( sudo ls /var/lib/pgsql/initdb_postgresql.log &>>$LOGF
     ( sudo /usr/bin/postgresql-setup --initdb &>>$LOGFILE && sudo systemctl enable --now postgresql &>>$LOGFILE && sayok ) \
      || die "Postgres setup failed" )
 
+echo "Installing & Creating VSCode workspace ... "
 inst_vsc(){
-	echo "Installing & Creating VSCode workspace ... "
 	sudo systemctl enable --now snapd 
 	which code || ( which snap && ( sudo snap install --classic code || sudo snap install --classic code ) || die "Can not install VSCode" )
 }
@@ -275,6 +275,7 @@ net.core.wmem_max = 1048586
 ps aux | grep git | grep odoo &>>$LOGFILE && echo "Waiting for git clone ..."
 while $(ps aux | grep git | grep odoo &>>$LOGFILE); do sleep 5; done
 
+echo "Setting some vscode extensions"
 inst_vsc_exts(){
 export vscext="Atishay-Jain.All-Autocomplete
 jigar-patel.odoosnippets
@@ -292,7 +293,6 @@ ms-vscode.atom-keybindings
 vscode-icons-team.vscode-icons
 Zignd.html-css-class-completion
 "
-echo "Setting some vscode extensions"
 while $(ps aux | grep snap | grep install | grep code); do sleep 5; done
 for ext in $vscext; do code --list-extensions | grep $ext || code --install-extension $ext ; done
 code $ODIR/.vscode/Odoo_${SFX}.code-workspace
