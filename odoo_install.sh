@@ -18,10 +18,10 @@ echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or
 	export RQF=$(mktemp)
 	export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster"
 
-	which apt &>$LOGFILE && export DIST=$(lsb_release -c | awk '{print $2}')
-	echo $DISTS | grep -i $DIST &>$LOGFILE || export DIST=bionic
-	which apt &>$LOGFILE && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
-	which dnf &>$LOGFILE && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
+	which apt &>>$LOGFILE && export DIST=$(lsb_release -c | awk '{print $2}')
+	echo $DISTS | grep -i $DIST &>>$LOGFILE || export DIST=bionic
+	which apt &>>$LOGFILE && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
+	which dnf &>>$LOGFILE && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
 }
 
 { #Colors - ref: https://stackoverflow.com/a/5947802
@@ -76,79 +76,80 @@ sayok(){
 	Press Enter to continue or CTRL+C to exit :
 	${NC}" | tee -a $LOGFILE && read && sudo ls >$LOGFILE
 }
+while :; do sleep 10; sudo ls &>/dev/null; done & # to avoid asking for passwd again
 
 # create workspace dir
 mkdir -p $BWS && cd $BWS || die "Can not create $BWS folder" 888
 
 # create user's bin and add it to $PATH
 mkdir -p $HOME/bin 
-cat ~/.bashrc | grep "~/bin\|HOME/bin" &>$LOGFILE || echo "PATH=~/bin:\$PATH" >>~/.bashrc
+cat ~/.bashrc | grep "~/bin\|HOME/bin" &>>$LOGFILE || echo "PATH=~/bin:\$PATH" >>~/.bashrc
 
 echo "Updating system ... "
-which apt &>$LOGFILE && sudo apt update &>$LOGFILE 
-# sudo apt -y dist-upgrade &>$LOGFILE && sayok
+which apt &>>$LOGFILE && sudo apt update &>>$LOGFILE 
+# sudo apt -y dist-upgrade &>>$LOGFILE && sayok
 
 echo -n "Installing base tools ..."
-which apt &>$LOGFILE && ( sudo apt install -y --no-install-recommends snapd aria2 wget curl python3-{dev,pip,virtualenv} &>$LOGFILE && sayok || die "Failed" )
-which apt &>$LOGFILE && sudo apt -y install python3-virtualenvwrapper &>$LOGFILE
+which apt &>>$LOGFILE && ( sudo apt install -y --no-install-recommends snapd aria2 wget curl python3-{dev,pip,virtualenv} &>>$LOGFILE && sayok || die "Failed" )
+which apt &>>$LOGFILE && sudo apt -y install python3-virtualenvwrapper &>>$LOGFILE
 # Fedora/CentOS
-which dnf &>$LOGFILE && ( sudo dnf install -y aria2 wget curl python3-{devel,pip,virtualenvwrapper} snapd &>$LOGFILE && sayok || die "Failed" )
+which dnf &>>$LOGFILE && ( sudo dnf install -y aria2 wget curl python3-{devel,pip,virtualenvwrapper} snapd &>>$LOGFILE && sayok || die "Failed" )
 
 echo -n "Creating venv $ODIR ... "
-[[ -d $ODIR ]] || ( python3 -m virtualenv -p /usr/bin/python3 $ODIR &>$LOGFILE && cd $ODIR && source $ODIR/bin/activate ) \
+[[ -d $ODIR ]] || ( python3 -m virtualenv -p /usr/bin/python3 $ODIR &>>$LOGFILE && cd $ODIR && source $ODIR/bin/activate ) \
 		&& sayok || die "can not create venv" 33
 
 cd $BWS
-which apt &>$LOGFILE && $aria2c -o wkhtml.deb "$WKURL" &>$LOGFILE &
-which dnf &>$LOGFILE && $aria2c -o wkhtml.rpm "$WKURL" &>$LOGFILE &
-#$aria2c -o vscode.deb "$CODE" &>$LOGFILE &
+which apt &>>$LOGFILE && $aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE &
+which dnf &>>$LOGFILE && $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE &
+#$aria2c -o vscode.deb "$CODE" &>>$LOGFILE &
 
 echo "Cloning odoo git $VER ... "
 cd $ODIR || die "$ODIR"
-[[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>$LOGFILE \
+[[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>>$LOGFILE \
 	|| die "can not download odoo sources" 45 &
 
 echo -n "Installing Dependencies ... "
-which apt &>$LOGFILE && ( sudo apt install -y snap postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
+which apt &>>$LOGFILE && ( sudo apt install -y snap postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
  libxslt1-dev libjpeg-dev libpq-dev cython3 python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
- build-essential &>$LOGFILE && sayok || die "can not install deps" 11 )
+ build-essential &>>$LOGFILE && sayok || die "can not install deps" 11 )
 
 # Fedora/CentOS
-which dnf &>$LOGFILE && ( sudo dnf install -y snapd postgresql{,-server} sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
+which dnf &>>$LOGFILE && ( sudo dnf install -y snapd postgresql{,-server} sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
  libxslt-devel libjpeg-turbo-devel libpq-devel python3-{devel,pip,virtualenv,Cython} gcc g++ make automake cmake autoconf \
-  &>$LOGFILE && sayok || die "can not install deps" 11 )
+  &>>$LOGFILE && sayok || die "can not install deps" 11 )
 
-which dnf &>$LOGFILE && sudo ln -sf /var/lib/snapd/snap / &>$LOGFILE
+which dnf &>>$LOGFILE && sudo ln -sf /var/lib/snapd/snap / &>>$LOGFILE
 export PATH=$PATH:/snap/bin
 
-which dnf &>$LOGFILE && echo -n "Setting up postgres ..."
-which dnf &>$LOGFILE && ( sudo ls /var/lib/pgsql/initdb_postgresql.log &>$LOGFILE && sayok || \
-    ( sudo /usr/bin/postgresql-setup --initdb &>$LOGFILE && sudo systemctl enable --now postgresql &>$LOGFILE && sayok ) \
+which dnf &>>$LOGFILE && echo -n "Setting up postgres ..."
+which dnf &>>$LOGFILE && ( sudo ls /var/lib/pgsql/initdb_postgresql.log &>>$LOGFILE && sayok || \
+    ( sudo /usr/bin/postgresql-setup --initdb &>>$LOGFILE && sudo systemctl enable --now postgresql &>>$LOGFILE && sayok ) \
      || die "Postgres setup failed" )
 
 echo "Installing & Creating VSCode workspace ... "
-sudo systemctl enable --now snapd &>$LOGFILE
-which code &>$LOGFILE \
-	|| ( which snap &>$LOGFILE && ( \
-                sudo snap install --classic code &>$LOGFILE || sudo snap install --classic code &>$LOGFILE \
+sudo systemctl enable --now snapd &>>$LOGFILE
+which code &>>$LOGFILE \
+	|| ( which snap &>>$LOGFILE && ( \
+                sudo snap install --classic code &>>$LOGFILE || sudo snap install --classic code &>>$LOGFILE \
                 ) || die "Can not install VSCode" ) &
 
 curl $REQ > $RQF 2>$LOGFILE || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $USER ..."
-sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>$LOGFILE \
-&& sayok || ( sudo su -l postgres -c "createuser -d $USER &>$LOGFILE" && sayok )
+sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>>$LOGFILE \
+&& sayok || ( sudo su -l postgres -c "createuser -d $USER &>>$LOGFILE" && sayok )
 
 # install rtlcss requored for RTL support in Odoo
 echo -n "Installing rtlcss... "
-which rtlcss &>$LOGFILE && sayok \
-|| ( sudo npm install -g rtlcss &>$LOGFILE && sayok )
+which rtlcss &>>$LOGFILE && sayok \
+|| ( sudo npm install -g rtlcss &>>$LOGFILE && sayok )
 
 
 echo "Creating start/stop scripts"
 echo "#!/bin/bash
 find $ODIR/ -type f -name \"*pyc\" -delete
-for prc in \$(ps aux | grep -v grep | grep -i \$(basename $ODIR) | grep python | awk '{print \$2}'); do kill -9 \$prc &>$LOGFILE; done
+for prc in \$(ps aux | grep -v grep | grep -i \$(basename $ODIR) | grep python | awk '{print \$2}'); do kill -9 \$prc &>>$LOGFILE; done
 cd $ODIR && source bin/activate && ./odoo/odoo-bin -c ./Odoo_$SFX.conf \$@
 " > $ODIR/.start.sh \
 	&& chmod u+x $ODIR/.start.sh \
@@ -190,7 +191,7 @@ echo pyaml >> $RQF
 echo pylint >> $RQF
 
 # link a folder to avoid an error in pip install lxml
-sudo ln -sf /usr/include/libxml2/libxml /usr/include/ &>$LOGFILE
+sudo ln -sf /usr/include/libxml2/libxml /usr/include/ &>>$LOGFILE
 
 echo "Installing Python libraries:"
 cd $ODIR && source ./bin/activate
@@ -199,17 +200,17 @@ while read line
 	do 
 		export LMSG=$(echo "$line" | awk '{print $1}')
 		echo -n " - Installing $LMSG : "
-		pip install "$line" &>$LOGFILE && sayok \
+		pip install "$line" &>>$LOGFILE && sayok \
 		|| ( die "$LMSG library install error" )
-		sudo ls &>$LOGFILE # To avoid asking for passwd again
+		sudo ls &>>$LOGFILE # To avoid asking for passwd again
     done < $RQF
 
 echo -n "Installing WKHTML2PDF ... "
-while $(ps aux | grep wkhtml | grep aria2 &>$LOGFILE); do sleep 5; done
-which wkhtmltopdf &>$LOGFILE && sayok \
+while $(ps aux | grep wkhtml | grep aria2 &>>$LOGFILE); do sleep 5; done
+which wkhtmltopdf &>>$LOGFILE && sayok \
   || ( \
-  		( which apt &>$LOGFILE && sudo apt -y install $BWS/wkhtml.deb &>$LOGFILE ) \
-  		|| ( which dnf &>$LOGFILE && sudo dnf install -y $BWS/wkhtml.rpm &>$LOGFILE ) \
+  		( which apt &>>$LOGFILE && sudo apt -y install $BWS/wkhtml.deb &>>$LOGFILE ) \
+  		|| ( which dnf &>>$LOGFILE && sudo dnf install -y $BWS/wkhtml.rpm &>>$LOGFILE ) \
   		&& sayok \
   	) || die "can not install wkhtml2pdf" 777 
 
@@ -249,12 +250,12 @@ echo '{
 
 echo "PYTHONPATH=$ODIR/odoo" >$ODIR/.env
 
-psql -l | grep zt &>$LOGFILE || ( createdb ztdb1 &>$LOGFILE && createdb ztdb2 &>$LOGFILE)
+psql -l | grep zt &>>$LOGFILE || ( createdb ztdb1 &>>$LOGFILE && createdb ztdb2 &>>$LOGFILE)
 
 export shmmax=$(expr $(free | grep Mem | awk '{print $2}') / 2)000
 export shmall=$(expr $shmmax / 4096)
 
-cat /etc/sysctl.conf | grep "kernel.shmmax = $shmmax" &>$LOGFILE \
+cat /etc/sysctl.conf | grep "kernel.shmmax = $shmmax" &>>$LOGFILE \
 || echo "############ Odoo, Postgress & VSCode #########
 fs.inotify.max_user_watches = 524288
 fs.aio-max-nr = 1048576
@@ -268,10 +269,10 @@ net.core.rmem_default = 262144
 net.core.rmem_max = 4194304
 net.core.wmem_default = 262144
 net.core.wmem_max = 1048586
-" | sudo tee -a /etc/sysctl.conf &>$LOGFILE; sudo sysctl -p &>$LOGFILE
+" | sudo tee -a /etc/sysctl.conf &>>$LOGFILE; sudo sysctl -p &>>$LOGFILE
 
-ps aux | grep git | grep odoo &>$LOGFILE && echo "Waiting for git clone ..."
-while $(ps aux | grep git | grep odoo &>$LOGFILE); do sleep 5; done
+ps aux | grep git | grep odoo &>>$LOGFILE && echo "Waiting for git clone ..."
+while $(ps aux | grep git | grep odoo &>>$LOGFILE); do sleep 5; done
 
 export vscext="Atishay-Jain.All-Autocomplete
 jigar-patel.odoosnippets
@@ -290,10 +291,10 @@ vscode-icons-team.vscode-icons
 Zignd.html-css-class-completion
 "
 echo "Setting some vscode extensions"
-for ext in $vscext; do code --list-extensions | grep $ext &>$LOGFILE || code --install-extension $ext &>$LOGFILE ; done
-which code &>$LOGFILE && code $ODIR/.vscode/Odoo_${SFX}.code-workspace &>$LOGFILE &
+for ext in $vscext; do code --list-extensions | grep $ext &>>$LOGFILE || code --install-extension $ext &>>$LOGFILE ; done
+which code &>>$LOGFILE && code $ODIR/.vscode/Odoo_${SFX}.code-workspace &>>$LOGFILE &
 
-[[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>$LOGFILE \
+[[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>>$LOGFILE \
 && echo -e "${LGREEN}
 #############################################################
 #  Looks like everything went well.
