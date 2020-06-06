@@ -135,6 +135,30 @@ inst_vsc(){
 }
 inst_vsc &>>$LOGFILE &
 
+echo "Setting some vscode extensions"
+inst_vsc_exts(){
+export vscext="Atishay-Jain.All-Autocomplete
+jigar-patel.odoosnippets
+coenraads.bracket-pair-colorizer
+DotJoshJohnson.xml
+formulahendry.auto-close-tag
+formulahendry.auto-rename-tag
+GrapeCity.gc-excelviewer
+janisdd.vscode-edit-csv
+magicstack.MagicPython
+mechatroner.rainbow-csv
+dbaeumer.vscode-eslint
+ms-python.python
+ms-vscode.atom-keybindings
+vscode-icons-team.vscode-icons
+Zignd.html-css-class-completion
+"
+while $(ps aux | grep snap | grep install | grep code); do sleep 5; done
+for ext in $vscext; do code --list-extensions | grep $ext || code --install-extension $ext ; done
+code $ODIR/.vscode/Odoo_${SFX}.code-workspace
+}
+inst_vsc_exts &>>$LOGFILE &
+
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $USER ..."
@@ -274,30 +298,6 @@ net.core.wmem_max = 1048586
 
 ps aux | grep git | grep odoo &>>$LOGFILE && echo "Waiting for git clone ..."
 while $(ps aux | grep git | grep odoo &>>$LOGFILE); do sleep 5; done
-
-echo "Setting some vscode extensions"
-inst_vsc_exts(){
-export vscext="Atishay-Jain.All-Autocomplete
-jigar-patel.odoosnippets
-coenraads.bracket-pair-colorizer
-DotJoshJohnson.xml
-formulahendry.auto-close-tag
-formulahendry.auto-rename-tag
-GrapeCity.gc-excelviewer
-janisdd.vscode-edit-csv
-magicstack.MagicPython
-mechatroner.rainbow-csv
-dbaeumer.vscode-eslint
-ms-python.python
-ms-vscode.atom-keybindings
-vscode-icons-team.vscode-icons
-Zignd.html-css-class-completion
-"
-while $(ps aux | grep snap | grep install | grep code); do sleep 5; done
-for ext in $vscext; do code --list-extensions | grep $ext || code --install-extension $ext ; done
-code $ODIR/.vscode/Odoo_${SFX}.code-workspace
-}
-inst_vsc_exts &>>$LOGFILE
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>>$LOGFILE \
 && echo -e "${LGREEN}
