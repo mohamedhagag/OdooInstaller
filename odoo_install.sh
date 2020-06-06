@@ -310,6 +310,6 @@ inst_vsc_exts &>>$LOGFILE
 #  - VSCode should be installed & configured for Odoo Devs
 #  - Then access odoo on$LRED http://localhost:80$SFX $LGREEN
 #############################################################
-
+${LBLUE}***For best results restart this PC now***$LGREEN
 Good luck, ;) .
 ${NC}" || die "Installation Failed" 1010
