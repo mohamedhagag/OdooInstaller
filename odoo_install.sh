@@ -132,11 +132,7 @@ echo "Installing & Creating VSCode workspace ... "
 inst_vsc(){
 	sudo systemctl enable --now snapd 
 	which code || ( which snap && ( sudo snap install --classic code || sudo snap install --classic code ) || die "Can not install VSCode" )
-}
-inst_vsc &>>$LOGFILE &
 
-echo "Setting some vscode extensions"
-inst_vsc_exts(){
 export vscext="Atishay-Jain.All-Autocomplete
 jigar-patel.odoosnippets
 coenraads.bracket-pair-colorizer
@@ -153,11 +149,10 @@ ms-vscode.atom-keybindings
 vscode-icons-team.vscode-icons
 Zignd.html-css-class-completion
 "
-while $(ps aux | grep snap | grep install | grep code); do sleep 5; done
 for ext in $vscext; do code --list-extensions | grep $ext || code --install-extension $ext ; done
 code $ODIR/.vscode/Odoo_${SFX}.code-workspace
 }
-inst_vsc_exts &>>$LOGFILE &
+inst_vsc &>>$LOGFILE &
 
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
