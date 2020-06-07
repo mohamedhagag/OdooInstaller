@@ -1,6 +1,6 @@
 # OdooInstaller
 
-Will allow you to install Odoo and VSCode in ~30 minutes on Debian, Ubuntu, Fedora, Mint
+Will allow you to install Odoo and VSCode in ~30 minutes in 1st run, then in 3 minutes on Debian, Ubuntu, Fedora, Mint
 
 For developers, this will create and organise an environment for Odoo development
 
