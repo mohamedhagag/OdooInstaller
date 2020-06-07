@@ -10,6 +10,6 @@ You can use this script to install odoo master branch and start discovering next
 
 # Usage
 
-`bash odooinstall.sh $VER`
+`bash odoo_install.sh $VER`
 
 where $VER is odoo version, by default is 13.0
