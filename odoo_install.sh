@@ -1,7 +1,7 @@
 #!/bin/bash
 # you can set odoo version as 1st argument
 export VER=13.0		 # set odoo version - should work with any version after 11.0 - tested with 12 & 13
-[[ -n $1 ]] && export VER="$1"
+[[ -n $1 ]] && export VER="$1" 
 ### Config vars - you may change these - but defaults are good 
 export SFX=$(echo -n $VER | awk -F\. '{print $1}')	 # Odoo folder suffix version without ".0"
 [[ $SFX = 'master' ]] && export SFX=99
@@ -159,7 +159,7 @@ curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $USER ..."
 sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>>$LOGFILE \
-&& sayok || ( sudo su -l postgres -c "createuser -d $USER " &>>$LOGFILE && sayok )
+&& sayok || ( sudo su -l postgres -c "createuser -d $USER " &>>$LOGFILE && sayok ) || die "Postgres user creation failed"
 
 # install rtlcss requored for RTL support in Odoo
 echo -n "Installing rtlcss... "
