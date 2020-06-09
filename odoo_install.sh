@@ -226,14 +226,11 @@ while read line
 		sudo ls &>/dev/null # To avoid asking for passwd again
     done < $RQF
 
-echo -n "Installing WKHTML2PDF ... "
+echo "Installing WKHTML2PDF ... "
 while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
-which wkhtmltopdf &>>$LOGFILE && sayok \
-  || ( \
-  		( which apt &>>$LOGFILE && sudo apt -y install $BWS/wkhtml.deb &>>$LOGFILE ) \
-  		|| ( which dnf &>>$LOGFILE && sudo dnf install -y $BWS/wkhtml.rpm &>>$LOGFILE ) \
-  		&& sayok \
-  	) || die "can not install wkhtml2pdf" 777 
+which wkhtmltopdf &>>$LOGFILE || ( which apt &>>$LOGFILE && sudo apt -y install $BWS/wkhtml.deb &>>$LOGFILE ) 
+which wkhtmltopdf &>>$LOGFILE || ( which dnf &>>$LOGFILE && sudo dnf -y install $BWS/wkhtml.rpm &>>$LOGFILE ) 
+which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777 
 
 mkdir -p $ODIR/.vscode
 
