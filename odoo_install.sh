@@ -17,11 +17,11 @@ export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
 	export RQF=$(mktemp)
 	export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster"
 
-	which apt &>>$LOGFILE && export DIST=$(lsb_release -c | awk '{print $2}')
+	which apt-get &>>$LOGFILE && export DIST=$(lsb_release -c | awk '{print $2}')
 	echo $DISTS | grep -i $DIST &>>$LOGFILE || export DIST=bionic
-	which apt &>>$LOGFILE && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
+	which apt-get &>>$LOGFILE && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
 	which dnf &>>$LOGFILE && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
-	which apt &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868"
+	which apt-get &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868"
 	which dnf &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760867"
 }
 
@@ -90,12 +90,12 @@ mkdir -p $HOME/bin
 cat ~/.bashrc | grep "~/bin\|HOME/bin" &>>$LOGFILE || echo "PATH=~/bin:\$PATH:/snap/bin" >>~/.bashrc
 
 echo "Updating system ... "
-which apt &>>$LOGFILE && sudo apt update &>>$LOGFILE 
-# sudo apt -y dist-upgrade &>>$LOGFILE && sayok
+which apt-get &>>$LOGFILE && sudo apt-get update &>>$LOGFILE 
+# sudo apt-get -y dist-upgrade &>>$LOGFILE && sayok
 
 echo -n "Installing base tools ..."
-which apt &>>$LOGFILE && ( sudo apt install -y --no-install-recommends snapd aria2 wget curl python3-{dev,pip,virtualenv} &>>$LOGFILE && sayok || die "Failed" )
-which apt &>>$LOGFILE && sudo apt -y install python3-virtualenvwrapper &>>$LOGFILE
+which apt-get &>>$LOGFILE && ( sudo apt-get install -y --no-install-recommends snapd aria2 wget curl python3-{dev,pip,virtualenv} &>>$LOGFILE && sayok || die "Failed" )
+which apt-get &>>$LOGFILE && sudo apt-get -y install python3-virtualenvwrapper &>>$LOGFILE
 # Fedora/CentOS
 which dnf &>>$LOGFILE && ( sudo dnf install -y snapd aria2 wget curl python3-{devel,pip,virtualenvwrapper} &>>$LOGFILE && sayok || die "Failed" )
 
@@ -104,7 +104,7 @@ echo -n "Creating venv $ODIR ... "
 		&& sayok || die "can not create venv" 33
 
 cd $BWS
-which apt &>>$LOGFILE && $aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE &
+which apt-get &>>$LOGFILE && $aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE &
 which dnf &>>$LOGFILE && $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE &
 #$aria2c -o vscode.deb "$CODE" &>>$LOGFILE &
 
@@ -114,7 +114,7 @@ cd $ODIR || die "$ODIR"
 	|| die "can not download odoo sources" 45 &
 
 echo -n "Installing Dependencies ... "
-which apt &>>$LOGFILE && ( sudo apt install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
+which apt-get &>>$LOGFILE && ( sudo apt-get install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
  libxslt1-dev libjpeg-dev libpq-dev cython3 gcc g++ make automake cmake autoconf \
  build-essential &>>$LOGFILE && sayok || die "can not install deps" 11 )
 
@@ -230,8 +230,8 @@ while read line
 
 echo "Installing WKHTML2PDF ... "
 while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
-which wkhtmltopdf &>>$LOGFILE || ( which apt &>>$LOGFILE && sudo apt -y install $BWS/wkhtml.deb &>>$LOGFILE ) 
-which wkhtmltopdf &>>$LOGFILE || ( which dnf &>>$LOGFILE && sudo dnf -y install $BWS/wkhtml.rpm &>>$LOGFILE ) 
+which wkhtmltopdf &>>$LOGFILE || ( which apt-get &>/dev/null && sudo apt-get -y install $BWS/wkhtml.deb &>>$LOGFILE ) 
+which wkhtmltopdf &>>$LOGFILE || ( which dnf &>/dev/null && sudo dnf -y install $BWS/wkhtml.rpm &>>$LOGFILE ) 
 which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777 
 
 mkdir -p $ODIR/.vscode
