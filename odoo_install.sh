@@ -21,6 +21,8 @@ export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
 	echo $DISTS | grep -i $DIST &>>$LOGFILE || export DIST=bionic
 	which apt &>>$LOGFILE && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
 	which dnf &>>$LOGFILE && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
+	which apt &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868"
+	which dnf &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760867"
 }
 
 { #Colors - ref: https://stackoverflow.com/a/5947802
@@ -95,7 +97,7 @@ echo -n "Installing base tools ..."
 which apt &>>$LOGFILE && ( sudo apt install -y --no-install-recommends snapd aria2 wget curl python3-{dev,pip,virtualenv} &>>$LOGFILE && sayok || die "Failed" )
 which apt &>>$LOGFILE && sudo apt -y install python3-virtualenvwrapper &>>$LOGFILE
 # Fedora/CentOS
-which dnf &>>$LOGFILE && ( sudo dnf install -y aria2 wget curl python3-{devel,pip,virtualenvwrapper} snapd &>>$LOGFILE && sayok || die "Failed" )
+which dnf &>>$LOGFILE && ( sudo dnf install -y snapd aria2 wget curl python3-{devel,pip,virtualenvwrapper} &>>$LOGFILE && sayok || die "Failed" )
 
 echo -n "Creating venv $ODIR ... "
 [[ -d $ODIR ]] || ( python3 -m virtualenv -p /usr/bin/python3 $ODIR &>>$LOGFILE && cd $ODIR && source $ODIR/bin/activate ) \
@@ -112,13 +114,13 @@ cd $ODIR || die "$ODIR"
 	|| die "can not download odoo sources" 45 &
 
 echo -n "Installing Dependencies ... "
-which apt &>>$LOGFILE && ( sudo apt install -y snap postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
- libxslt1-dev libjpeg-dev libpq-dev cython3 python3-{dev,pip,virtualenv} gcc g++ make automake cmake autoconf \
+which apt &>>$LOGFILE && ( sudo apt install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
+ libxslt1-dev libjpeg-dev libpq-dev cython3 gcc g++ make automake cmake autoconf \
  build-essential &>>$LOGFILE && sayok || die "can not install deps" 11 )
 
 # Fedora/CentOS
-which dnf &>>$LOGFILE && ( sudo dnf install -y snapd postgresql{,-server} sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
- libxslt-devel libjpeg-turbo-devel libpq-devel python3-{devel,pip,virtualenv,Cython} gcc g++ make automake cmake autoconf \
+which dnf &>>$LOGFILE && ( sudo dnf install -y postgresql{,-server} sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
+ libxslt-devel libjpeg-turbo-devel libpq-devel gcc g++ make automake cmake autoconf \
   &>>$LOGFILE && sayok || die "can not install deps" 11 )
 
 which dnf &>>$LOGFILE && sudo ln -sf /var/lib/snapd/snap / &>>$LOGFILE
