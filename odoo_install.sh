@@ -247,8 +247,8 @@ echo '{
             "type": "python",
             "cwd": "${workspaceFolder}",
             "request": "launch",
-            "program": "./odoo/odoo-bin",
-            "args": ["-c","./Odoo_*.conf"],
+            "program": "${cwd}/odoo/odoo-bin",
+            "args": ["-c","${cwd}/Odoo_*.conf"],
             "env": {"GEVENT_SUPPORT":"True"},
             "console": "integratedTerminal"
         }
