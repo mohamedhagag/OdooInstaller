@@ -190,7 +190,8 @@ xmlrpc_port = 80$SFX
 longpolling_port = 70$SFX
 limit_time_cpu = 1800
 limit_time_real = 3600
-log_file = ../Odoo.log
+logfile = ./Odoo.log
+log_level = warn
 workers = 2
 dev = all
 "> $ODIR/Odoo_$SFX.conf && mkdir -p $ODIR/my_adds
