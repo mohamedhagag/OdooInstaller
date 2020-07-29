@@ -19,9 +19,9 @@ export PATH=$PATH:/snap/bin
 	export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster"
 
 	# apt based exports
-	which apt-get &>>$LOGFILE && export DIST=$(lsb_release -c | awk '{print $2}') \
+	which apt-get &>/dev/null && export DIST=$(lsb_release -c | awk '{print $2}') \
 	&& echo $DISTS | grep -i $DIST &>>$LOGFILE || export DIST=bionic
-	which apt-get && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868" \
+	which apt-get &>/dev/null && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868" \
 	&& export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
 
 	# rpm based exports
