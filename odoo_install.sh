@@ -317,7 +317,7 @@ net.core.wmem_max = 1048586
 " | sudo tee -a /etc/sysctl.conf &>>$LOGFILE; sudo sysctl -p &>>$LOGFILE
 
 while $(ps aux | grep code | grep aria2 &>/dev/null); do sleep 5; done
-inst_vse
+inst_vse &>>$LOGFILE
 
 ps aux | grep git | grep odoo &>>$LOGFILE && echo "Waiting for git clone ..."
 while $(ps aux | grep git | grep odoo &>>$LOGFILE); do sleep 5; done
