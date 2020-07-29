@@ -175,8 +175,8 @@ dnf_do(){
 
 }
 
-which apt-get &>/dev/null && apt_do
-which dnf &>/dev/null && dnf_do
+which apt-get &>>$LOGFILE && apt_do
+which dnf &>>$LOGFILE && dnf_do
 
 
 echo -n "Creating venv $ODIR ... "
