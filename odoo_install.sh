@@ -20,9 +20,9 @@ export PATH=$PATH:/snap/bin
 
 	# apt based exports
 	which apt-get &>>$LOGFILE && export DIST=$(lsb_release -c | awk '{print $2}') \
-	&& export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868" \
+	&& echo $DISTS | grep -i $DIST &>>$LOGFILE || export DIST=bionic
+	which apt-get && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868" \
 	&& export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
-	echo $DISTS | grep -i $DIST &>>$LOGFILE || export DIST=bionic
 
 	# rpm based exports
 	which dnf &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760867" \
