@@ -175,6 +175,10 @@ dnf_do(){
 
 }
 
+which apt-get &>/dev/null && apt_do
+which dnf &>/dev/null && dnf_do
+
+
 echo -n "Creating venv $ODIR ... "
 [[ -d $ODIR ]] || ( python3 -m virtualenv -p /usr/bin/python3 $ODIR &>>$LOGFILE && cd $ODIR && source $ODIR/bin/activate ) \
 		&& sayok || die "can not create venv" 33
