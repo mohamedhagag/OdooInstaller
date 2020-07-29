@@ -118,21 +118,22 @@ inst_vse(){
 }
 
 apt_do(){
-	cd $BWS
-	$aria2c -o vscode.deb "$VSURL" &>>$LOGFILE || die "Download VSCode failed" &
-	$aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
 
 	echo "Updating system ... "
-	which apt-get &>>$LOGFILE && sudo apt-get update &>>$LOGFILE 
+	sudo apt-get update &>>$LOGFILE 
 
 	echo -n "Installing base tools ..."
 	sudo apt-get install -y --no-install-recommends aria2 wget curl python3-{dev,pip,virtualenv} &>>$LOGFILE && sayok || die "Deps. install Failed"
 	sudo apt-get -y install python3-virtualenvwrapper &>>$LOGFILE
 
+	cd $BWS
+	$aria2c -o vscode.deb "$VSURL" &>>$LOGFILE || die "Download VSCode failed" &
+	$aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
+
 	echo -n "Installing Dependencies ... "
-	which apt-get &>>$LOGFILE && ( sudo apt-get install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
+	sudo apt-get install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
 	libxslt1-dev libjpeg-dev libpq-dev cython3 gcc g++ make automake cmake autoconf \
-	build-essential &>>$LOGFILE && sayok || die "can not install deps" 11 )
+	build-essential &>>$LOGFILE && sayok || die "can not install deps" 11 
 
 	while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
 	echo "Installing WKHTML2PDF ... "
@@ -146,18 +147,18 @@ apt_do(){
 }
 
 dnf_do(){
+
+	echo -n "Installing base tools ..."
+	sudo dnf install -y aria2 wget curl python3-{devel,pip,virtualenvwrapper} &>>$LOGFILE && sayok || die "Failed"
+
 	cd $BWS
 	$aria2c -o vscode.rpm "$VSURL" &>>$LOGFILE || die "Download VSCode failed" &
 	$aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
 
-	echo -n "Installing base tools ..."
-	which dnf &>>$LOGFILE && ( sudo dnf install -y aria2 wget curl python3-{devel,pip,virtualenvwrapper} &>>$LOGFILE && sayok || die "Failed" )
-	which dnf &>>$LOGFILE && $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE &
-
 	echo -n "Installing Dependencies ... "
-	which dnf &>>$LOGFILE && ( sudo dnf install -y postgresql{,-server} sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
+	sudo dnf install -y postgresql{,-server} sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
 	libxslt-devel libjpeg-turbo-devel libpq-devel gcc g++ make automake cmake autoconf \
-	&>>$LOGFILE && sayok || die "can not install deps" 11 )
+	&>>$LOGFILE && sayok || die "can not install deps" 11
 
 	echo -n "Setting up postgres ..."
 	sudo ls /var/lib/pgsql/initdb_postgresql.log &>>$LOGFILE && sayok || \
