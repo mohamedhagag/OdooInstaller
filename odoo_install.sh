@@ -7,6 +7,7 @@ export SFX=$(echo -n $VER | awk -F\. '{print $1}')	 # Odoo folder suffix version
 [[ $SFX = 'master' ]] && export SFX=99
 export BWS="$HOME/workspace"		 # Base workspace folder default ~/workspace
 export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
+export PATH=$PATH:/snap/bin
 
 ##################### Do Not make changes below this line #####################
 { #exports
@@ -17,12 +18,32 @@ export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
 	export RQF=$(mktemp)
 	export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster"
 
-	which apt-get &>>$LOGFILE && export DIST=$(lsb_release -c | awk '{print $2}')
+	# apt based exports
+	which apt-get &>>$LOGFILE && export DIST=$(lsb_release -c | awk '{print $2}') \
+	&& export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868" \
+	&& export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
 	echo $DISTS | grep -i $DIST &>>$LOGFILE || export DIST=bionic
-	which apt-get &>>$LOGFILE && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
-	which dnf &>>$LOGFILE && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
-	which apt-get &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868"
-	which dnf &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760867"
+
+	# rpm based exports
+	which dnf &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760867" \
+	&& export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
+
+	export vscext="Atishay-Jain.All-Autocomplete
+		jigar-patel.odoosnippets
+		coenraads.bracket-pair-colorizer
+		DotJoshJohnson.xml
+		formulahendry.auto-close-tag
+		formulahendry.auto-rename-tag
+		GrapeCity.gc-excelviewer
+		janisdd.vscode-edit-csv
+		magicstack.MagicPython
+		mechatroner.rainbow-csv
+		dbaeumer.vscode-eslint
+		ms-python.python
+		ms-vscode.atom-keybindings
+		vscode-icons-team.vscode-icons
+		Zignd.html-css-class-completion
+	"
 }
 
 { #Colors - ref: https://stackoverflow.com/a/5947802
@@ -89,73 +110,80 @@ mkdir -p $BWS && cd $BWS || die "Can not create $BWS folder" 888
 mkdir -p $HOME/bin 
 cat ~/.bashrc | grep "~/bin\|HOME/bin" &>>$LOGFILE || echo "PATH=~/bin:\$PATH:/snap/bin" >>~/.bashrc
 
-echo "Updating system ... "
-which apt-get &>>$LOGFILE && sudo apt-get update &>>$LOGFILE 
-# sudo apt-get -y dist-upgrade &>>$LOGFILE && sayok
+cd $BWS
 
-echo -n "Installing base tools ..."
-which apt-get &>>$LOGFILE && ( sudo apt-get install -y --no-install-recommends snapd aria2 wget curl python3-{dev,pip,virtualenv} &>>$LOGFILE && sayok || die "Failed" )
-which apt-get &>>$LOGFILE && sudo apt-get -y install python3-virtualenvwrapper &>>$LOGFILE
-# Fedora/CentOS
-which dnf &>>$LOGFILE && ( sudo dnf install -y snapd aria2 wget curl python3-{devel,pip,virtualenvwrapper} &>>$LOGFILE && sayok || die "Failed" )
+inst_vse(){
+	echo "Installing VSCode extensions ... "
+	which code && for ext in $vscext; do code --list-extensions | grep $ext || code --install-extension $ext ; done
+}
+
+apt_do(){
+	cd $BWS
+	$aria2c -o vscode.deb "$VSURL" &>>$LOGFILE || die "Download VSCode failed" &
+	$aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
+
+	echo "Updating system ... "
+	which apt-get &>>$LOGFILE && sudo apt-get update &>>$LOGFILE 
+
+	echo -n "Installing base tools ..."
+	sudo apt-get install -y --no-install-recommends aria2 wget curl python3-{dev,pip,virtualenv} &>>$LOGFILE && sayok || die "Deps. install Failed"
+	sudo apt-get -y install python3-virtualenvwrapper &>>$LOGFILE
+
+	echo -n "Installing Dependencies ... "
+	which apt-get &>>$LOGFILE && ( sudo apt-get install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
+	libxslt1-dev libjpeg-dev libpq-dev cython3 gcc g++ make automake cmake autoconf \
+	build-essential &>>$LOGFILE && sayok || die "can not install deps" 11 )
+
+	while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
+	echo "Installing WKHTML2PDF ... "
+	which wkhtmltopdf &>>$LOGFILE || sudo apt-get -y install $BWS/wkhtml.deb &>>$LOGFILE
+	which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777
+
+	while $(ps aux | grep code | grep aria2 &>/dev/null); do sleep 5; done
+	echo -n "Installing VSCode:"
+	sudo apt-get -y install ./vscode.deb &>>$LOGFILE && sayok || die "Can not install VSCode"
+
+}
+
+dnf_do(){
+	cd $BWS
+	$aria2c -o vscode.rpm "$VSURL" &>>$LOGFILE || die "Download VSCode failed" &
+	$aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
+
+	echo -n "Installing base tools ..."
+	which dnf &>>$LOGFILE && ( sudo dnf install -y aria2 wget curl python3-{devel,pip,virtualenvwrapper} &>>$LOGFILE && sayok || die "Failed" )
+	which dnf &>>$LOGFILE && $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE &
+
+	echo -n "Installing Dependencies ... "
+	which dnf &>>$LOGFILE && ( sudo dnf install -y postgresql{,-server} sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
+	libxslt-devel libjpeg-turbo-devel libpq-devel gcc g++ make automake cmake autoconf \
+	&>>$LOGFILE && sayok || die "can not install deps" 11 )
+
+	echo -n "Setting up postgres ..."
+	sudo ls /var/lib/pgsql/initdb_postgresql.log &>>$LOGFILE && sayok || \
+    ( sudo /usr/bin/postgresql-setup --initdb &>>$LOGFILE && sudo systemctl enable --now postgresql &>>$LOGFILE && sayok ) \
+    || die "Postgres setup failed"
+
+	while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
+	echo "Installing WKHTML2PDF ... "
+	which wkhtmltopdf &>>$LOGFILE || sudo dnf -y install $BWS/wkhtml.rpm &>>$LOGFILE
+	which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777 
+
+	while $(ps aux | grep code | grep aria2 &>/dev/null); do sleep 5; done
+	echo -n "Installing VSCode:"
+	sudo dnf -y install ./vscode.rpm &>>$LOGFILE && sayok || die "Can not install VSCode"
+
+}
 
 echo -n "Creating venv $ODIR ... "
 [[ -d $ODIR ]] || ( python3 -m virtualenv -p /usr/bin/python3 $ODIR &>>$LOGFILE && cd $ODIR && source $ODIR/bin/activate ) \
 		&& sayok || die "can not create venv" 33
 
-cd $BWS
-which apt-get &>>$LOGFILE && $aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE &
-which dnf &>>$LOGFILE && $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE &
-#$aria2c -o vscode.deb "$CODE" &>>$LOGFILE &
 
 echo "Cloning odoo git $VER ... "
 cd $ODIR || die "$ODIR"
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>>$LOGFILE \
 	|| die "can not download odoo sources" 45 &
-
-echo -n "Installing Dependencies ... "
-which apt-get &>>$LOGFILE && ( sudo apt-get install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
- libxslt1-dev libjpeg-dev libpq-dev cython3 gcc g++ make automake cmake autoconf \
- build-essential &>>$LOGFILE && sayok || die "can not install deps" 11 )
-
-# Fedora/CentOS
-which dnf &>>$LOGFILE && ( sudo dnf install -y postgresql{,-server} sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
- libxslt-devel libjpeg-turbo-devel libpq-devel gcc g++ make automake cmake autoconf \
-  &>>$LOGFILE && sayok || die "can not install deps" 11 )
-
-which dnf &>>$LOGFILE && sudo ln -sf /var/lib/snapd/snap / &>>$LOGFILE
-export PATH=$PATH:/snap/bin
-
-which dnf &>>$LOGFILE && echo -n "Setting up postgres ..."
-which dnf &>>$LOGFILE && ( sudo ls /var/lib/pgsql/initdb_postgresql.log &>>$LOGFILE && sayok || \
-    ( sudo /usr/bin/postgresql-setup --initdb &>>$LOGFILE && sudo systemctl enable --now postgresql &>>$LOGFILE && sayok ) \
-     || die "Postgres setup failed" )
-
-echo "Installing & Creating VSCode workspace ... "
-inst_vsc(){
-	sudo systemctl enable --now snapd 
-	which code || ( which snap && ( sudo snap install --classic code || sudo snap install --classic code ) || die "Can not install VSCode" )
-
-export vscext="Atishay-Jain.All-Autocomplete
-jigar-patel.odoosnippets
-coenraads.bracket-pair-colorizer
-DotJoshJohnson.xml
-formulahendry.auto-close-tag
-formulahendry.auto-rename-tag
-GrapeCity.gc-excelviewer
-janisdd.vscode-edit-csv
-magicstack.MagicPython
-mechatroner.rainbow-csv
-dbaeumer.vscode-eslint
-ms-python.python
-ms-vscode.atom-keybindings
-vscode-icons-team.vscode-icons
-Zignd.html-css-class-completion
-"
-for ext in $vscext; do code --list-extensions | grep $ext || code --install-extension $ext ; done
-
-}
-inst_vsc &>>$LOGFILE &
 
 curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
 
@@ -167,7 +195,6 @@ sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>>$LOGFILE \
 echo -n "Installing rtlcss... "
 which rtlcss &>>$LOGFILE && sayok \
 || ( sudo npm install -g rtlcss &>>$LOGFILE && sayok )
-
 
 echo "Creating start/stop scripts"
 echo "#!/bin/bash
@@ -229,22 +256,15 @@ while read line
 		sudo ls &>/dev/null # To avoid asking for passwd again
     done < $RQF
 
-echo "Installing WKHTML2PDF ... "
-while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
-which wkhtmltopdf &>>$LOGFILE || ( which apt-get &>/dev/null && sudo apt-get -y install $BWS/wkhtml.deb &>>$LOGFILE ) 
-which wkhtmltopdf &>>$LOGFILE || ( which dnf &>/dev/null && sudo dnf -y install $BWS/wkhtml.rpm &>>$LOGFILE ) 
-which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777 
+
 
 mkdir -p $ODIR/.vscode
 
 echo '{
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Python: Odoo Run",
             "type": "python",
             "cwd": "${workspaceFolder}",
             "request": "launch",
@@ -257,11 +277,10 @@ echo '{
 }' >$ODIR/.vscode/launch.json
 
 echo '{
-    "python.pythonPath": "bin/python"
+    "python.pythonPath": "${workspaceFolder}/bin/python"
 }'>$ODIR/.vscode/settings.json
 
 echo '{
-	"python.envFile": ${workspaceFolder}/.env,
 	"folders": [
 		{
 			"path": ".."
@@ -291,6 +310,9 @@ net.core.rmem_max = 4194304
 net.core.wmem_default = 262144
 net.core.wmem_max = 1048586
 " | sudo tee -a /etc/sysctl.conf &>>$LOGFILE; sudo sysctl -p &>>$LOGFILE
+
+while $(ps aux | grep code | grep aria2 &>/dev/null); do sleep 5; done
+inst_vse
 
 ps aux | grep git | grep odoo &>>$LOGFILE && echo "Waiting for git clone ..."
 while $(ps aux | grep git | grep odoo &>>$LOGFILE); do sleep 5; done
