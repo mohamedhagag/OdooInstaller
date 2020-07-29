@@ -114,7 +114,7 @@ cd $BWS
 
 inst_vse(){
 	echo "Installing VSCode extensions ... "
-	which code && for ext in $vscext; do code --list-extensions | grep $ext || code --install-extension $ext ; done
+	which code &>/dev/null && for ext in $vscext; do code --list-extensions | grep $ext || code --install-extension $ext ; done
 }
 
 apt_do(){
@@ -142,7 +142,7 @@ apt_do(){
 
 	while $(ps aux | grep code | grep aria2 &>/dev/null); do sleep 5; done
 	echo -n "Installing VSCode:"
-	sudo apt-get -y install ./vscode.deb &>>$LOGFILE && sayok || die "Can not install VSCode"
+	which code &>/dev/null || sudo apt-get -y install ./vscode.deb &>>$LOGFILE && sayok || die "Can not install VSCode"
 
 }
 
@@ -172,13 +172,12 @@ dnf_do(){
 
 	while $(ps aux | grep code | grep aria2 &>/dev/null); do sleep 5; done
 	echo -n "Installing VSCode:"
-	sudo dnf -y install ./vscode.rpm &>>$LOGFILE && sayok || die "Can not install VSCode"
+	which code &>/dev/null || sudo dnf -y install ./vscode.rpm &>>$LOGFILE && sayok || die "Can not install VSCode"
 
 }
 
 which apt-get &>>$LOGFILE && apt_do
 which dnf &>>$LOGFILE && dnf_do
-
 
 echo -n "Creating venv $ODIR ... "
 [[ -d $ODIR ]] || ( python3 -m virtualenv -p /usr/bin/python3 $ODIR &>>$LOGFILE && cd $ODIR && source $ODIR/bin/activate ) \
