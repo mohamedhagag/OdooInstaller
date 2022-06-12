@@ -9,7 +9,7 @@ export YEAR=$(date +%y)
 export OVER=$(expr $YEAR - 6) #OdooVersion - computed
 [[ $MONTH -lt 11 ]] && export OVER=$(expr $OVER - 1) || export OVER=${OVER}
 
-read -p "Enter Odoo version you want to install (default $OVER): " UV #UserVersion
+read -p "Enter Odoo version you want to install (default $OVER),enter master for next version: " UV #UserVersion
 
 die(){ # Function to print an error and kill the script
 	export MSG=$1; export ERR=$2; 
@@ -25,23 +25,27 @@ die(){ # Function to print an error and kill the script
 
 # check UV is correct including .0 
 if [[ x$UV != x ]]; then
-	[ $UV -eq 0 ] 2>&1 >/dev/null
-	if [ $? -eq 2 ]; then
-		die "Input is not a number, exiting ..." 33
-	elif (( $(echo "$UV > $OVER" | bc -l ) )); then
-		die "version $UV not released yet, exitting ..." 44
+	if echo $UV | grep -i master; then
+		export OVER=master
 	else
-		export OVER=$UV
+		[ $UV -eq 0 ] 2>&1 >/dev/null
+		if [ $? -eq 2 ]; then
+			die "Input is not a number, exiting ..." 33
+		elif (( $(echo "$UV > $OVER" | bc -l ) )); then
+			die "version $UV not released yet, exitting ..." 44
+		else
+			export OVER=$UV
+		fi
 	fi
 fi
 
-export SFX=$OVER
-export VER=${OVER}.0
+[[ $OVER == "master" ]] && export SFX=99 || export SFX=$OVER
+[[ $OVER == "master" ]] && export VER=master || export VER=${OVER}.0
 
 ### Config vars - you may change these - but defaults are good 
 [[ $SFX = 'master' ]] && export SFX=99
 export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
-
+mkdir -p $ODIR
 read -p "Press Enter to ENABLE VSCode IDE installation for Odoo Development (Recommended) or Any letter to disable it: " IVSC
 [[ x$IVSC == x ]] && export IVSC=0 || export IVSC=1
 
@@ -50,9 +54,11 @@ read -p "Press Enter to ENABLE VSCode IDE installation for Odoo Development (Rec
 	export LOGFILE="$HOME/OdooInstaller.log"
 	export aria2c='aria2c -c -x4 -s4'
 	export OGH="https://github.com/odoo/odoo"
-	export REQ="https://raw.githubusercontent.com/odoo/odoo/master/requirements.txt"
-	export RQF=$(mktemp)
+	export RQF=${ODIR}/odoo_requirements.txt
 	export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster"
+
+	# clean
+	rm -f $RQF $LOGFILE
 
 	# apt based exports
 	which apt-get &>/dev/null && export DIST=$(lsb_release -c | awk '{print $2}') \
@@ -97,7 +103,7 @@ sayok(){
 	echo -e "${LGREEN} OK ${NC}" 
 }
 
-echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or master" 9999 # Check version arg
+echo $OVER | grep master &>/dev/null || echo $VER | grep ".0" || die "Version should have .0 like 12.0 not 12 or master" 9999 # Check version arg
 
 { # Intro
 	touch $LOGFILE
@@ -126,6 +132,9 @@ echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or
 	Press Enter to continue or CTRL+C to exit :
 	${NC}" | tee -a $LOGFILE && read && sudo ls &>/dev/null
 }
+[[ $OVER == "master" ]] && export REQ="https://raw.githubusercontent.com/odoo/odoo/master/requirements.txt" \
+	|| export REQ="https://raw.githubusercontent.com/odoo/odoo/$VER/requirements.txt"
+
 while :; do sleep 10; sudo ls &>/dev/null; done & # to avoid asking for passwd again
 
 # create workspace dir
@@ -180,7 +189,7 @@ dnf_do(){
 	$aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
 
 	echo -n "Installing Dependencies ... "
-	sudo dnf install -y postgresql{,-server} postgresql-server-dev-all sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
+	sudo dnf install -y postgresql{,-server} libpq-devel sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
 	libxslt-devel libjpeg-devel libpq-devel gcc g++ make automake cmake autoconf \
 	&>>$LOGFILE && sayok || die "can not install deps" 11
 
@@ -203,8 +212,10 @@ which apt-get &>>$LOGFILE && apt_do
 which dnf &>>$LOGFILE && dnf_do
 
 echo -n "Creating venv $ODIR ... "
-[[ -d $ODIR ]] || ( python3 -m virtualenv -p /usr/bin/python3 $ODIR &>>$LOGFILE && cd $ODIR && source $ODIR/bin/activate ) \
+[[ -d $ODIR ]] && cd $ODIR \
+	|| ( python3 -m virtualenv -p /usr/bin/python3 $ODIR &>>$LOGFILE && cd $ODIR && source $ODIR/bin/activate ) \
 		&& sayok || die "can not create venv" 33
+[[ -d ./bin ]] || python3 -m venv .
 
 
 echo "Cloning odoo git $VER ... "
@@ -212,7 +223,7 @@ cd $ODIR || die "$ODIR"
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>>$LOGFILE \
 	|| die "can not download odoo sources" 45 &
 
-curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
+curl $REQ > /tmp/req.txt 2>/dev/null || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $USER ..."
 sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>>$LOGFILE \
@@ -227,7 +238,7 @@ echo "Creating start/stop scripts"
 echo "#!/bin/bash
 find $ODIR/ -type f -name \"*pyc\" -delete
 for prc in \$(ps aux | grep -v grep | grep -i \$(basename $ODIR) | grep python | awk '{print \$2}'); do kill -9 \$prc &>/dev/null; done
-cd $ODIR && source bin/activate && ./odoo/odoo-bin -c ./Odoo_$SFX.conf \$@
+cd $ODIR && source bin/activate && ./odoo/odoo-bin -c ./Odoo.conf \$@
 " > $ODIR/.start.sh \
 	&& chmod u+x $ODIR/.start.sh \
 	&& cp $ODIR/.start.sh ~/bin/Odoo_Start_$SFX \
@@ -248,30 +259,37 @@ logfile = ./Odoo.log
 log_level = warn
 workers = 2
 dev = all
-"> $ODIR/Odoo_$SFX.conf && mkdir -p $ODIR/my_adds
+"> $ODIR/Odoo.conf && mkdir -p $ODIR/my_adds
 
-# change some python pkg versions
-sed -i -e "s,psycopg2.*,psycopg2,g" $RQF
-sed -i -e "s,num2words.*,num2words,g" $RQF
-sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
+# # change some python pkg versions
+cat /tmp/req.txt | grep -v ==\ \'win32 | sed "s,\#.*,,g" | sort | uniq >$RQF && rm /tmp/req.txt
+
+# sed -i -e "s,psycopg2.*,psycopg2-binary,g" $RQF
 echo phonenumbers >> $RQF
 echo pyaml >> $RQF
 echo pylint >> $RQF
+echo psycopg2-binary >> $RQF
 
 # link a folder to avoid an error in pip install lxml
 sudo ln -sf /usr/include/libxml2/libxml /usr/include/ &>>$LOGFILE
+# fix python-ldap build
+sudo ln -s /usr/lib64/libldap.so /usr/lib64/libldap_r.so &>/dev/null
 
 echo "Installing Python libraries:"
 cd $ODIR && source ./bin/activate
+which python3; sleep 3
+
+python3 -m pip install --upgrade pip &>/dev/null
 
 while read line 
 	do 
 		export LMSG=$(echo "$line" | awk '{print $1}')
 		echo -n " - Installing $LMSG : "
-		pip install "$line" &>>$LOGFILE && sayok \
-		|| ( die "$LMSG library install error" )
+		python3 -m pip install "$line" &>>$LOGFILE && sayok || echo Failed\? 
+		# || ( die "$LMSG library install error" )
 		sudo ls &>/dev/null # To avoid asking for passwd again
     done < $RQF
+
 
 vscup(){
 
@@ -286,7 +304,7 @@ vscup(){
             "cwd": "${workspaceFolder}",
             "request": "launch",
             "program": "${cwd}/odoo/odoo-bin",
-            "args": ["-c","${cwd}/Odoo_*.conf"],
+            "args": ["-c","${cwd}/Odoo.conf"],
             "env": {"GEVENT_SUPPORT":"True"},
             "console": "integratedTerminal"
         }
@@ -294,7 +312,7 @@ vscup(){
 	}' >$ODIR/.vscode/launch.json
 
 	echo '{
-			"python.pythonPath": "${workspaceFolder}/bin/python"
+			"python.defaultInterpreterPath": "${workspaceFolder}/bin/python"
 	}'>$ODIR/.vscode/settings.json
 
 	echo '{
@@ -346,7 +364,7 @@ while $(ps aux | grep git | grep odoo &>>$LOGFILE); do sleep 5; done
 #  - Have Odoo v$VER In $LRED $BWS/Odoo_$SFX $LGREEN
 #  - you can re/start odoo by running Odoo_Start_$SFX
 #  - stop odoo by running Odoo_Stop_$SFX
-#  - Odoo config file $ODIR/Odoo_$SFX.conf
+#  - Odoo config file $ODIR/Odoo.conf
 #  - If You enabled VSCode should be installed & configured 
 #  - Then access odoo on$LRED http://localhost:80$SFX $LGREEN
 #############################################################
