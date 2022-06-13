@@ -250,15 +250,14 @@ head -3 $ODIR/.start.sh > $ODIR/.stop.sh && chmod u+x $ODIR/.stop.sh \
 
 echo "Creating odoo config file ..."
 echo "[options]
-addons_path = ./odoo/odoo/addons,./odoo/addons,./my_adds
+addons_path = ./odoo/odoo/addons,./odoo/addons,./my_adds,./my_adds/enterprise,./my_adds/community
+admin_passwd = admin
 xmlrpc_port = 80$SFX
 longpolling_port = 70$SFX
 limit_time_cpu = 1800
 limit_time_real = 3600
-logfile = ./Odoo.log
 log_level = warn
-workers = 2
-dev = all
+#workers = 2
 "> $ODIR/Odoo.conf && mkdir -p $ODIR/my_adds
 
 # # change some python pkg versions
