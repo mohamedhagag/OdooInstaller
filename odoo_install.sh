@@ -327,8 +327,6 @@ vscup(){
 
 [[ $IVSC ]] && vscup
 
-psql -l | grep zt &>>$LOGFILE || ( createdb ztdb1 &>>$LOGFILE && createdb ztdb2 &>>$LOGFILE)
-
 export shmmax=$(expr $(free | grep Mem | awk '{print $2}') / 2)000
 export shmall=$(expr $shmmax / 4096)
 
