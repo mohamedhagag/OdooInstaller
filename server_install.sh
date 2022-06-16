@@ -1,4 +1,5 @@
 #!/bin/bash
+alias rm=rm
 export MAKEFLAGS="-j6"
 export LC_ALL="C"
 export O_LC=$LC_ALL
@@ -36,7 +37,7 @@ die(){ # Function to print an error and kill the script
 }
 
 read -p "Enter Odoo version you want to install (default $OVER): " UV #UserVersion
-read -p "Enter Project Name ex: ABCo (default ${PN}$OVER): " UPN #ProjectName
+read -p "Enter Project Name ex: ABCo (default ${PN}): " UPN #ProjectName
 
 [[ -n $UPN ]] && export PN=$(echo $UPN | sed "s, ,,g")
 
@@ -202,19 +203,21 @@ apt_do(){
         rm /etc/nginx/sites-enabled/default
         cp /tmp/ngxcfg /etc/nginx/sites-available/$ODSVC
         ln -s /etc/nginx/sites-available/$ODSVC /etc/nginx/sites-enabled/
+        systemctl restart nginx &>/dev/null
 }
 
 dnf_do(){
 
         echo -n "Installing base tools ..."
-         dnf install -y nginx aria2 wget curl python3-{devel,pip,venv} &>>$LOGFILE && sayok || die "Failed"
+        dnf install -y epel-release
+         dnf install -y nginx aria2 wget curl python3-{devel,pip} &>>$LOGFILE && sayok || die "Failed"
 
         cd $BWS
         $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
 
         echo -n "Installing Dependencies ... "
          dnf install -y postgresql{,-server} libpq-devel sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
-        libxslt-devel libjpeg-devel libpq-devel gcc g++ make automake cmake autoconf \
+        libxslt-devel libjpeg-devel libpq-devel gcc gcc-c++ make automake cmake autoconf \
         &>>$LOGFILE && sayok || die "can not install deps" 11
 
         echo -n "Setting up postgres ..."
