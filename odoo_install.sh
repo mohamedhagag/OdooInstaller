@@ -223,7 +223,7 @@ cd $ODIR || die "$ODIR"
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>>$LOGFILE \
 	|| die "can not download odoo sources" 45 &
 
-curl $REQ > /tmp/req.txt 2>/dev/null || die "can not get $REQ " 22
+curl $REQ | grep -v ==\ \'win32 | sed "s,\#.*,,g" | sort | uniq >$RQF || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $USER ..."
 sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>>$LOGFILE \
@@ -259,9 +259,6 @@ limit_time_real = 3600
 log_level = warn
 #workers = 2
 "> $ODIR/Odoo.conf && mkdir -p $ODIR/my_adds
-
-# # change some python pkg versions
-cat /tmp/req.txt | grep -v ==\ \'win32 | sed "s,\#.*,,g" | sort | uniq >$RQF && rm /tmp/req.txt
 
 # sed -i -e "s,psycopg2.*,psycopg2-binary,g" $RQF
 echo phonenumbers >> $RQF
