@@ -11,29 +11,29 @@ export OVER=$(expr $YEAR - 6) #OdooVersion - computed
 
 
 { #Colors - ref: https://stackoverflow.com/a/5947802
-        export RED='\033[0;31m'
-        export GREEN='\033[0;32m'
-        export BLUE='\033[0;34m'
-        export LRED='\033[1;31m'
-        export LGREEN='\033[1;32m'
-        export LBLUE='\033[1;34m'
-        export NC='\033[0m' # No Color
+    export RED='\033[0;31m'
+    export GREEN='\033[0;32m'
+    export BLUE='\033[0;34m'
+    export LRED='\033[1;31m'
+    export LGREEN='\033[1;32m'
+    export LBLUE='\033[1;34m'
+    export NC='\033[0m' # No Color
 }
 
-sayok(){ 
-        echo -e "${LGREEN} OK ${NC}" 
+sayok(){
+    echo -e "${LGREEN} OK ${NC}"
 }
 
 die(){ # Function to print an error and kill the script
-        export MSG=$1; export ERR=$2; 
-        echo -e "${LRED}Error: $MSG ${NC}" #error msg
-        echo -e "${LRED}
+    export MSG=$1; export ERR=$2;
+    echo -e "${LRED}Error: $MSG ${NC}" #error msg
+    echo -e "${LRED}
         Something went wrong ...
         Plz check the previous messages for errors
         and try re-running the installation again.
         You may delete $ODIR before restarting.
-        ${NC}"
-        [[ -n $ERR ]] && exit $ERR || exit 9
+    ${NC}"
+    [[ -n $ERR ]] && exit $ERR || exit 9
 }
 
 read -p "Enter Odoo version you want to install (default $OVER): " UV #UserVersion
@@ -42,14 +42,14 @@ read -p "Enter Project Name ex: ABCo (default ${PN}): " UPN #ProjectName
 [[ -n $UPN ]] && export PN=$(echo $UPN | sed "s, ,,g")
 
 if [[ x$UV != x ]]; then
-        [ $UV -eq 0 ] 2>&1 >/dev/null
-        if [ $? -eq 2 ]; then
-                die "Input is not a number, exiting ..." 33
+    [ $UV -eq 0 ] 2>&1 >/dev/null
+    if [ $? -eq 2 ]; then
+        die "Input is not a number, exiting ..." 33
         elif (( $(echo "$UV > $OVER" | bc -l ) )); then
-                die "version $UV not released yet, exitting ..." 44
-        else
-                echo $UV | grep '.0' && export OVER=$(echo $UV | sed "s,\.0,,g") || export OVER=$UV
-        fi
+        die "version $UV not released yet, exitting ..." 44
+    else
+        echo $UV | grep '.0' && export OVER=$(echo $UV | sed "s,\.0,,g") || export OVER=$UV
+    fi
 fi
 
 export AUSR=${PN}$OVER
@@ -58,41 +58,41 @@ which dnf &>/dev/null && ( useradd -s /bin/bash -m -G wheel $AUSR || die "Failed
 export BWS=$(eval echo ~$AUSR)
 
 { # Other exports
-        export PORT1=$(shuf -i ${OVER}00-${OVER}99 -n 1) #Port for multi install
-        export PORT2=$(shuf -i ${OVER}00-${OVER}99 -n 1) #IM Port for multi install
-
-        export LOGFILE="/$ODIR/Install.log"
-        export aria2c='aria2c -c -x4 -s4'
-        export OGH="https://github.com/odoo/odoo"
-        export RQF=${ODIR}/odoo_requirements.txt
-        export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster"
-
-        ### Config vars 
-        export SFX=$OVER
-        export VER=${OVER}.0
-        export ODIR="$BWS/Odoo"             # Odoo dir name
-        mkdir -p $ODIR
-        export ODSVC=odoo-$PN$SFX
-
-        # clean
-        rm -f $RQF $LOGFILE
-
-        # apt based exports
-        which apt-get &>/dev/null && export DIST=$(lsb_release -c | awk '{print $2}') \
-        && echo $DISTS | grep -i $DIST &>>$LOGFILE || export DIST=bionic
-        which apt-get &>/dev/null && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868" \
-        && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
-
-        # rpm based exports
-        which dnf &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760867" \
-        && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
+    export PORT1=$(shuf -i ${OVER}00-${OVER}99 -n 1) #Port for multi install
+    export PORT2=$(shuf -i ${OVER}00-${OVER}99 -n 1) #IM Port for multi install
+    
+    export LOGFILE="/$ODIR/Install.log"
+    export aria2c='aria2c -c -x4 -s4'
+    export OGH="https://github.com/odoo/odoo"
+    export RQF=${ODIR}/odoo_requirements.txt
+    export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster"
+    
+    ### Config vars
+    export SFX=$OVER
+    export VER=${OVER}.0
+    export ODIR="$BWS/Odoo"             # Odoo dir name
+    mkdir -p $ODIR
+    export ODSVC=odoo-$PN$SFX
+    
+    # clean
+    rm -f $RQF $LOGFILE
+    
+    # apt based exports
+    which apt-get &>/dev/null && export DIST=$(lsb_release -c | awk '{print $2}') \
+    && echo $DISTS | grep -i $DIST &>>$LOGFILE || export DIST=bionic
+    which apt-get &>/dev/null && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868" \
+    && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
+    
+    # rpm based exports
+    which dnf &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760867" \
+    && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
 }
 
 { # Intro
-        touch $LOGFILE
-        echo -e "${LBLUE}
+    touch $LOGFILE
+    echo -e "${LBLUE}
         #############################################################
-        #  Welcome to Odoo installer script by 
+        #  Welcome to Odoo installer script by
         #  ${LGREEN}Mohamed M. Hagag https://linkedin.com/in/mohamedhagag${LBLUE}
         #  released under GPL3 License
         #-----------------------------------------------------------
@@ -112,7 +112,7 @@ export BWS=$(eval echo ~$AUSR)
         ############################################################
 
         Press Enter to continue or CTRL+C to exit :
-        ${NC}" | tee -a $LOGFILE && read
+    ${NC}" | tee -a $LOGFILE && read
 }
 
 cat <<EOF >/tmp/ngxcfg
@@ -124,7 +124,7 @@ upstream ${ODSVC}-im {
 }
 
 server {
-    server_name _;
+    server_name ${PN}.example.com;
 
 keepalive_timeout 3010;
 keepalive_requests 1024;
@@ -167,6 +167,30 @@ send_timeout 3010;
         expires 864000;
         proxy_pass http://${ODSVC};
     }
+
+    gzip_types
+        application/atom+xml
+        application/geo+json
+        application/javascript
+        application/x-javascript
+        application/json
+        application/ld+json
+        application/manifest+json
+        application/rdf+xml
+        application/rss+xml
+        application/xhtml+xml
+        application/xml
+        font/eot
+        font/otf
+        font/ttf
+        image/svg+xml
+        text/css
+        text/javascript
+        text/plain
+        text/xml;
+
+    gzip on;
+
 }
 EOF
 
@@ -174,65 +198,65 @@ export REQ="https://raw.githubusercontent.com/odoo/odoo/$VER/requirements.txt"
 
 
 # create user's bin and add it to $PATH
-mkdir -p $BWS/bin 
+mkdir -p $BWS/bin
 cat $BWS/.bashrc | grep "~/bin\|HOME/bin" &>>$LOGFILE || echo "PATH=~/bin:\$PATH:/snap/bin" >>$BWS/.bashrc
 
 cd $BWS
 
 apt_do(){
-
-        echo "Updating system ... "
-         apt-get update &>>$LOGFILE 
-
-        echo -n "Installing base tools ..."
-         apt-get install -y --no-install-recommends nginx aria2 wget curl python3-{dev,pip,venv} &>>$LOGFILE && sayok || die "Deps. install Failed"
-
-        cd $BWS
-        $aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
-
-        echo -n "Installing Dependencies ... "
-         apt-get install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
-        libxslt1-dev libjpeg-dev libpq-dev cython3 gcc g++ make automake cmake autoconf \
-        build-essential &>>$LOGFILE && sayok || die "can not install deps" 11 
-
-        while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
-        echo "Installing WKHTML2PDF ... "
-        which wkhtmltopdf &>>$LOGFILE ||  apt-get -y install $BWS/wkhtml.deb &>>$LOGFILE
-        which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777
-
-        rm /etc/nginx/sites-enabled/default
-        cp /tmp/ngxcfg /etc/nginx/sites-available/$ODSVC
-        ln -s /etc/nginx/sites-available/$ODSVC /etc/nginx/sites-enabled/
-        systemctl restart nginx &>/dev/null
+    
+    echo "Updating system ... "
+    apt-get update &>>$LOGFILE
+    
+    echo -n "Installing base tools ..."
+    apt-get install -y --no-install-recommends nginx aria2 wget curl python3-{dev,pip,venv} &>>$LOGFILE && sayok || die "Deps. install Failed"
+    
+    cd $BWS
+    $aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
+    
+    echo -n "Installing Dependencies ... "
+    apt-get install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
+    libxslt1-dev libjpeg-dev libpq-dev cython3 gcc g++ make automake cmake autoconf \
+    build-essential &>>$LOGFILE && sayok || die "can not install deps" 11
+    
+    while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
+    echo "Installing WKHTML2PDF ... "
+    which wkhtmltopdf &>>$LOGFILE ||  apt-get -y install $BWS/wkhtml.deb &>>$LOGFILE
+    which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777
+    
+    rm /etc/nginx/sites-enabled/default
+    cp /tmp/ngxcfg /etc/nginx/sites-available/$ODSVC
+    ln -s /etc/nginx/sites-available/$ODSVC /etc/nginx/sites-enabled/
+    systemctl restart nginx &>/dev/null
 }
 
 dnf_do(){
-
-        echo -n "Installing base tools ..."
-        dnf install -y epel-release
-         dnf install -y nginx aria2 wget curl python3-{devel,pip} &>>$LOGFILE && sayok || die "Failed"
-
-        cd $BWS
-        $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
-
-        echo -n "Installing Dependencies ... "
-         dnf install -y postgresql{,-server} libpq-devel sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
-        libxslt-devel libjpeg-devel libpq-devel gcc gcc-c++ make automake cmake autoconf \
-        &>>$LOGFILE && sayok || die "can not install deps" 11
-
-        echo -n "Setting up postgres ..."
-         ls /var/lib/pgsql/initdb_postgresql.log &>>$LOGFILE && sayok || \
-        (  /usr/bin/postgresql-setup --initdb &>>$LOGFILE &&  systemctl enable --now postgresql &>>$LOGFILE && sayok ) \
-        || die "Postgres setup failed"
-
-        while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
-        echo "Installing WKHTML2PDF ... "
-        which wkhtmltopdf &>>$LOGFILE ||  dnf -y install $BWS/wkhtml.rpm &>>$LOGFILE
-        which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777
-
-        rm -f /etc/nginx/conf.d/default
-        cp /tmp/ngxcfg /etc/nginx/conf.d/$ODSVC
-
+    
+    echo -n "Installing base tools ..."
+    dnf install -y epel-release
+    dnf install -y nginx aria2 wget curl python3-{devel,pip} &>>$LOGFILE && sayok || die "Failed"
+    
+    cd $BWS
+    $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
+    
+    echo -n "Installing Dependencies ... "
+    dnf install -y postgresql{,-server} libpq-devel sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
+    libxslt-devel libjpeg-devel libpq-devel gcc gcc-c++ make automake cmake autoconf \
+    &>>$LOGFILE && sayok || die "can not install deps" 11
+    
+    echo -n "Setting up postgres ..."
+    ls /var/lib/pgsql/initdb_postgresql.log &>>$LOGFILE && sayok || \
+    (  /usr/bin/postgresql-setup --initdb &>>$LOGFILE &&  systemctl enable --now postgresql &>>$LOGFILE && sayok ) \
+    || die "Postgres setup failed"
+    
+    while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
+    echo "Installing WKHTML2PDF ... "
+    which wkhtmltopdf &>>$LOGFILE ||  dnf -y install $BWS/wkhtml.rpm &>>$LOGFILE
+    which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777
+    
+    rm -f /etc/nginx/conf.d/default
+    cp /tmp/ngxcfg /etc/nginx/conf.d/$ODSVC
+    
 }
 
 which apt-get &>>$LOGFILE && apt_do
@@ -244,7 +268,7 @@ python3 -m venv $BWS || die "can not create VENV in $BWS"
 echo "Cloning odoo git $VER ... "
 cd $ODIR || die "$ODIR"
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>>$LOGFILE \
-        || die "can not download odoo sources" 45 &
+|| die "can not download odoo sources" 45 &
 
 curl $REQ | grep -v ==\ \'win32 | sed "s,\#.*,,g" | sort | uniq >$RQF || die "can not get $REQ " 22
 
@@ -252,7 +276,7 @@ echo -n "Creating postgres user for $AUSR ..."
 su -l postgres -c "psql -qtAc \"\\du\"" | grep $AUSR &>>$LOGFILE \
 && sayok || (  su -l postgres -c "createuser -d $AUSR " &>>$LOGFILE && sayok ) || die "Postgres user creation failed"
 
-# install rtlcss requored for RTL support in Odoo 
+# install rtlcss requored for RTL support in Odoo
 echo -n "Installing rtlcss... "
 which rtlcss &>>$LOGFILE && sayok || (  npm install -g rtlcss &>>$LOGFILE && sayok )
 
@@ -284,9 +308,9 @@ echo pyaml >> $RQF
 echo pylint >> $RQF
 
 # link a folder to avoid an error in pip install lxml
- ln -sf /usr/include/libxml2/libxml /usr/include/ &>>$LOGFILE
+ln -sf /usr/include/libxml2/libxml /usr/include/ &>>$LOGFILE
 # fix python-ldap build
- ln -s /usr/lib64/libldap.so /usr/lib64/libldap_r.so &>/dev/null
+ln -s /usr/lib64/libldap.so /usr/lib64/libldap_r.so &>/dev/null
 
 echo "Installing Python libraries:"
 source $BWS/bin/activate || die "VENV Failed"
@@ -294,14 +318,14 @@ which python3; sleep 3
 
 python3 -m pip install --upgrade pip &>/dev/null
 
-while read line 
-        do 
-                export LMSG=$(echo "$line" | awk '{print $1}')
-                echo -n " - Installing $LMSG : "
-                python3 -m pip install "$line" &>>$LOGFILE && sayok || echo Failed\? 
-                # || ( die "$LMSG library install error" )
-                 ls &>/dev/null # To avoid asking for passwd again
-    done < $RQF
+while read line
+do
+    export LMSG=$(echo "$line" | awk '{print $1}')
+    echo -n " - Installing $LMSG : "
+    python3 -m pip install "$line" &>>$LOGFILE && sayok || echo Failed\?
+    # || ( die "$LMSG library install error" )
+    ls &>/dev/null # To avoid asking for passwd again
+done < $RQF
 
 
 export shmmax=$(expr $(free | grep Mem | awk '{print $2}') / 2)000
@@ -344,7 +368,7 @@ WantedBy=multi-user.target
 EOF
 
 source $BWS/bin/activate; pip freeze | grep psycopg2 &>/dev/null || \
-        (echo "Installing psycopg2" && pip3 install psycopg2-binary &>/dev/null)
+(echo "Installing psycopg2" && pip3 install psycopg2-binary &>/dev/null)
 
 chown -R $AUSR: $BWS
 systemctl daemon-reload && systemctl enable --now $ODSVC
