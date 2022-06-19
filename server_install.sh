@@ -303,6 +303,7 @@ EOF
 
 mkdir -p $ODIR/my_adds/{enterprise,community}
 
+echo asn1crypto >> $RQF
 echo phonenumbers >> $RQF
 echo pyaml >> $RQF
 echo pylint >> $RQF
@@ -370,7 +371,7 @@ EOF
 source $BWS/bin/activate; pip freeze | grep psycopg2 &>/dev/null || \
 (echo "Installing psycopg2" && pip3 install psycopg2-binary &>/dev/null)
 
-chown -R $AUSR: $BWS
+chown -R $AUSR: ~$AUSR
 systemctl daemon-reload && systemctl enable --now $ODSVC
 
 ps aux | grep git | grep odoo &>>$LOGFILE && echo "Waiting for git clone ..."
