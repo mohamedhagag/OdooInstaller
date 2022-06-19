@@ -58,8 +58,8 @@ which dnf &>/dev/null && ( useradd -s /bin/bash -m -G wheel $AUSR || die "Failed
 export BWS=$(eval echo ~$AUSR)
 
 { # Other exports
-    export PORT1=$(shuf -i ${OVER}00-${OVER}99 -n 1) #Port for multi install
-    export PORT2=$(shuf -i ${OVER}00-${OVER}99 -n 1) #IM Port for multi install
+    export PORT1=1$(id -u $AUSR) #Port for multi install
+    export PORT2=2$(id -u $AUSR) #IM Port for multi install
     
     export LOGFILE="/$ODIR/Install.log"
     export aria2c='aria2c -c -x4 -s4'
