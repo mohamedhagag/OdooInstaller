@@ -254,8 +254,8 @@ dnf_do(){
     &>>$LOGFILE && sayok || die "can not install deps" 11
     
     echo -n "Setting up postgres ..."
-    ls /var/lib/pgsql/initdb_postgresql.log &>>$LOGFILE && sayok || \
-    (  /usr/bin/postgresql-setup --initdb &>>$LOGFILE &&  systemctl enable --now postgresql &>>$LOGFILE && sayok ) \
+    systemctl status --no-pager postgres*  &>>$LOGFILE && sayok || \
+    (  /usr/bin/postgresql*setup initdb &>>$LOGFILE &&  systemctl enable --now postgresql &>>$LOGFILE && sayok ) \
     || die "Postgres setup failed"
     
     while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
