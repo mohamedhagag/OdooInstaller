@@ -237,7 +237,10 @@ apt_do(){
 }
 
 dnf_do(){
-    
+    source /etc/os-release
+    echo $ID_LIKE $VERSION| grep centos | grep 8\. &>/dev/null \
+        && echo "Configuring Centos" yum install dnf-plugins-core && yum config-manager --set-enabled powertools \
+        && yum -y update && dnf -y module enable nodejs:16 && 
     echo -n "Installing base tools ..."
     dnf install -y epel-release
     dnf install -y nginx aria2 wget curl python3-{devel,pip} &>>$LOGFILE && sayok || die "Failed"
@@ -246,7 +249,7 @@ dnf_do(){
     $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
     
     echo -n "Installing Dependencies ... "
-    dnf install -y postgresql{,-server} libpq-devel sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
+    dnf install -y postgresql{,-server} libpq-devel sassc npm libxml2-devel libgsasl-devel openldap-devel \
     libxslt-devel libjpeg-devel libpq-devel gcc gcc-c++ make automake cmake autoconf \
     &>>$LOGFILE && sayok || die "can not install deps" 11
     
