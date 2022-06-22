@@ -64,7 +64,6 @@ export BWS=$(eval echo ~$AUSR)
     export PORT1=1$(id -u $AUSR) #Port for multi install
     export PORT2=2$(id -u $AUSR) #IM Port for multi install
     
-    export LOGFILE="/$ODIR/Install.log"
     export aria2c='aria2c -c -x4 -s4'
     export OGH="https://github.com/odoo/odoo"
     export RQF=${ODIR}/odoo_requirements.txt
@@ -74,6 +73,7 @@ export BWS=$(eval echo ~$AUSR)
     export SFX=$OVER
     export VER=${OVER}.0
     export ODIR="$BWS/Odoo"             # Odoo dir name
+    export LOGFILE="/$ODIR/Install.log"
     mkdir -p $ODIR
     export ODSVC=odoo-$PN$SFX
     
