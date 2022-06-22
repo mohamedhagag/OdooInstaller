@@ -284,7 +284,9 @@ su -l postgres -c "psql -qtAc \"\\du\"" | grep $AUSR &>>$LOGFILE \
 
 # install rtlcss requored for RTL support in Odoo
 echo -n "Installing rtlcss... "
-which rtlcss &>>$LOGFILE && sayok || (  npm install -g rtlcss &>>$LOGFILE && sayok )
+for pkg in less rtlcss less-plugin-clean-css; do
+    which $pkg &>>$LOGFILE && sayok || (  npm install -g $pkg &>>$LOGFILE && sayok )
+done
 
 echo "Creating start/stop scripts"
 echo "#!/bin/bash
