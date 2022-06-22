@@ -4,6 +4,7 @@ export MAKEFLAGS="-j6"
 export LC_ALL="C"
 export O_LC=$LC_ALL
 export PN="ov"
+export DOM="example.com"
 export MONTH=$(date +%m)
 export YEAR=$(date +%y)
 export OVER=$(expr $YEAR - 6) #OdooVersion - computed
@@ -37,9 +38,11 @@ die(){ # Function to print an error and kill the script
 }
 
 read -p "Enter Odoo version you want to install (default $OVER): " UV #UserVersion
-read -p "Enter Project Name ex: ABCo (default ${PN}): " UPN #ProjectName
+read -p "Enter Project Name ex: Hajjaj (default ${PN}): " UPN #ProjectName
+read -p "Enter Your Main Domain ex: Hajjaj.pro (default ${DOM}): " UDOM #ProjectName
 
 [[ -n $UPN ]] && export PN=$(echo $UPN | sed "s, ,,g")
+[[ -n $UDOM ]] && export DOM=$UDOM
 
 if [[ x$UV != x ]]; then
     [ $UV -eq 0 ] 2>&1 >/dev/null
@@ -124,13 +127,15 @@ upstream ${ODSVC}-im {
 }
 
 server {
-    server_name ${PN}.example.com;
+    server_name ${PN}.$DOM;
 
-keepalive_timeout 3010;
-keepalive_requests 1024;
-client_header_timeout 3010;
-client_body_timeout 3010;
-send_timeout 3010;
+    add_header Access-Control-Allow-Origin *;
+
+    keepalive_timeout 3010;
+    keepalive_requests 1024;
+    client_header_timeout 3010;
+    client_body_timeout 3010;
+    send_timeout 3010;
     proxy_read_timeout 3000;
     proxy_connect_timeout 3000;
     proxy_send_timeout 3000;
@@ -209,7 +214,8 @@ apt_do(){
     apt-get update &>>$LOGFILE
     
     echo -n "Installing base tools ..."
-    apt-get install -y --no-install-recommends nginx aria2 wget curl python3-{dev,pip,venv} &>>$LOGFILE && sayok || die "Deps. install Failed"
+    apt-get install -y --no-install-recommends snapd nginx aria2 wget curl python3-{dev,pip,venv} &>>$LOGFILE && sayok || die "Deps. install Failed"
+    snap install certbot --classic &>/dev/null &
     
     cd $BWS
     $aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
