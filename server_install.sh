@@ -382,13 +382,13 @@ EOF
 source $BWS/bin/activate; pip freeze | grep psycopg2 &>/dev/null || \
 (echo "Installing psycopg2" && pip3 install psycopg2-binary &>/dev/null)
 
-chown -R $AUSR: ~$AUSR &>/dev/null
+chown -R $AUSR: ~$BWS &>/dev/null
 systemctl daemon-reload && systemctl enable --now $ODSVC
 
 ps aux | grep git | grep odoo &>>$LOGFILE && echo "Waiting for git clone ..."
 while $(ps aux | grep git | grep clone | grep odoo &>>$LOGFILE); do sleep 5; done
 
-chown -R $AUSR: /home/$AUSR && source $BWS/bin/activate && [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] &>>$LOGFILE \
+chown -R $AUSR: $BWS && source $BWS/bin/activate && [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] &>>$LOGFILE \
 && echo -e "${LGREEN}
 #############################################################
 #  Looks like everything went well.
