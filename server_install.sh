@@ -250,9 +250,9 @@ cat /etc/passwd | grep postgres &>/dev/null \
 
 dnf_do(){
     source /etc/os-release
-	echo "INSTALLING GIT ...." && dnf -y install git nano
+	echo "INSTALLING GIT ...." && dnf -y install git
     echo $ID_LIKE $VERSION| grep centos | grep 8\. &>/dev/null \
-        && echo "Configuring Centos" yum install git dnf-plugins-core && yum config-manager --set-enabled powertools \
+        && echo "Configuring Centos" yum install bash-completion telnet dnf-plugins-core && yum config-manager --set-enabled powertools \
         && yum -y update && dnf -y module enable nodejs:16 &&  dnf -y module enable python38 \
 	&& dnf -y install python38-{devel,pip,wheel} 
 
@@ -280,6 +280,8 @@ dnf_do(){
     which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777
     
     rm -f /etc/nginx/conf.d/default
+    sed -i -e "s,server_name.*,server_name xxx\;,g" /etc/nginx/nginx.conf
+    sed -i -e "s,default_server,,g" /etc/nginx/nginx.conf
     cp /tmp/ngxcfg /etc/nginx/conf.d/${ODSVC}.conf
     
 }
