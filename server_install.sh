@@ -248,7 +248,7 @@ dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_6
 dnf_do(){
     source /etc/os-release
     echo $ID_LIKE $VERSION| grep centos | grep 8\. &>/dev/null \
-        && echo "Configuring Centos" yum install dnf-plugins-core && yum config-manager --set-enabled powertools \
+        && echo "Configuring Centos" yum install git dnf-plugins-core && yum config-manager --set-enabled powertools \
         && yum -y update && dnf -y module enable nodejs:16 &&  dnf -y module enable python38 \
 	&& dnf -y install python38-{devel,pip,wheel} 
 
