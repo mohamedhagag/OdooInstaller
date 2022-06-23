@@ -416,7 +416,8 @@ chown -R $AUSR: $BWS && source $BWS/bin/activate && [[ -d $ODIR ]] && [[ -f $ODI
 #  - To re/start odoo run systemctl restart $ODSCV
 #  - To re/start odoo run systemctl stop $ODSCV
 #  - Odoo config file $ODIR/Odoo.conf
-#  - Then access odoo on$LRED http://localhost:$PORT1 $LGREEN
+#  - Then access odoo on domain if DNS configured $LRED http://${PN}.${DOM} $LGREEN
+#  - or using IP:PORT $LRED http://$(curl http://ifconfig.me):$PORT1 $LGREEN
 #############################################################
 ${LBLUE}***For best results restart this Server now***$LGREEN
 Good luck, ;) .
