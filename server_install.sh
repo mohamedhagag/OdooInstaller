@@ -250,6 +250,7 @@ systemctl status postgres* &>/dev/null \
 
 dnf_do(){
     source /etc/os-release
+	echo "INSTALLING GIT ...." && dnf -y install git nano
     echo $ID_LIKE $VERSION| grep centos | grep 8\. &>/dev/null \
         && echo "Configuring Centos" yum install git dnf-plugins-core && yum config-manager --set-enabled powertools \
         && yum -y update && dnf -y module enable nodejs:16 &&  dnf -y module enable python38 \
