@@ -236,11 +236,22 @@ apt_do(){
     systemctl restart nginx &>/dev/null
 }
 
+pgdg_el8(){
+dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
+  && dnf -qy module disable postgresql \
+  && dnf install -y postgresql14-server \
+  && /usr/pgsql-14/bin/postgresql-14-setup initdb \
+  && systemctl enable postgresql-14 \
+  && systemctl start postgresql-14
+}
+
 dnf_do(){
     source /etc/os-release
     echo $ID_LIKE $VERSION| grep centos | grep 8\. &>/dev/null \
         && echo "Configuring Centos" yum install dnf-plugins-core && yum config-manager --set-enabled powertools \
-        && yum -y update && dnf -y module enable nodejs:16 &&  dnf -y module enable python38 && dnf -y install python38-{devel,pip,wheel}
+        && yum -y update && dnf -y module enable nodejs:16 &&  dnf -y module enable python38 \
+	&& dnf -y install python38-{devel,pip,wheel} 
+
     echo -n "Installing base tools ..."
     dnf install -y epel-release
     dnf install -y nginx aria2 wget curl python3-{devel,pip} &>>$LOGFILE && sayok || die "Failed"
@@ -249,8 +260,9 @@ dnf_do(){
     $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
     
     echo -n "Installing Dependencies ... "
-    dnf install -y postgresql{,-server} libpq-devel sassc npm libxml2-devel libgsasl-devel openldap-devel \
-    libxslt-devel libjpeg-devel libpq-devel gcc gcc-c++ make automake cmake autoconf \
+    echo $ID_LIKE $VERSION| grep centos | grep 8\. &>/dev/null && pgdg_el8 || die "Postgres install Fialed" 
+    dnf install -y libpq-devel sassc npm libxml2-devel libgsasl-devel openldap-devel \
+    libxslt-devel libjpeg-devel gcc gcc-c++ make automake cmake autoconf \
     &>>$LOGFILE && sayok || die "can not install deps" 11
     
     echo -n "Setting up postgres ..."
