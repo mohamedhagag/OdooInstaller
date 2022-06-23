@@ -237,12 +237,15 @@ apt_do(){
 }
 
 pgdg_el8(){
-dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
+systemctl status postgres* &>/dev/null \
+|| (
+  dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
   && dnf -qy module disable postgresql \
   && dnf install -y postgresql14-server \
   && /usr/pgsql-14/bin/postgresql-14-setup initdb \
   && systemctl enable postgresql-14 \
   && systemctl start postgresql-14
+ )
 }
 
 dnf_do(){
