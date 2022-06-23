@@ -257,7 +257,7 @@ dnf_do(){
 	&& dnf -y install python38-{devel,pip,wheel} 
 
     echo -n "Installing base tools ..."
-    dnf install -y epel-release git
+    dnf install -y epel-release
     dnf install -y nginx aria2 wget curl python3-{devel,pip} &>>$LOGFILE && sayok || die "Failed"
     
     cd $BWS
