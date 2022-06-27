@@ -253,8 +253,8 @@ dnf_do(){
 	echo "INSTALLING GIT ...." && dnf -y install git
     echo $ID_LIKE $VERSION| grep centos | grep 8\. &>/dev/null \
         && echo "Configuring Centos" yum install bash-completion telnet dnf-plugins-core && yum config-manager --set-enabled powertools \
-        && yum -y update && dnf -y module enable nodejs:16 &&  dnf -y module enable python38 \
-	&& dnf -y install python38-{devel,pip,wheel} 
+        && yum -y update && dnf -y module enable nodejs:16 &&  dnf -y module enable python39 \
+        && dnf -y install python39-{devel,pip,wheel} && dnf remove -y python3
 
     echo -n "Installing base tools ..."
     dnf install -y epel-release
@@ -291,7 +291,7 @@ which dnf &>>$LOGFILE && dnf_do
 
 echo -n "Creating venv $BWS ... "
 which apt &>/dev/null && ( python3 -m venv $BWS || die "can not create VENV in $BWS" )
-which dnf &>/dev/null && ( python3.8 -m venv $BWS || die "can not create VENV in $BWS" )
+which dnf &>/dev/null && ( python3.9 -m venv $BWS || die "can not create VENV in $BWS" )
 
 echo "Cloning odoo git $VER ... "
 cd $ODIR || die "$ODIR"
