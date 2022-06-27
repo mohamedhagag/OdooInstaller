@@ -406,6 +406,8 @@ systemctl daemon-reload && systemctl enable --now $ODSVC && systemctl restart ng
 
 ps aux | grep git | grep odoo &>>$LOGFILE && echo "Waiting for git clone ..."
 while $(ps aux | grep git | grep clone | grep odoo &>>$LOGFILE); do sleep 5; done
+which dnf && dnf -y remove python3 &>/dev/null
+
 
 chown -R $AUSR: $BWS && source $BWS/bin/activate && [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] &>>$LOGFILE \
 && echo -e "${LGREEN}
