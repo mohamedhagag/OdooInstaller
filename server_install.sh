@@ -209,27 +209,26 @@ cat $BWS/.bashrc | grep "~/bin\|HOME/bin" &>>$LOGFILE || echo "PATH=~/bin:\$PATH
 cd $BWS
 
 apt_do(){
-    
     echo "Updating system ... "
     apt-get update &>>$LOGFILE
-    
+
     echo -n "Installing base tools ..."
-    apt-get install -y --no-install-recommends snapd nginx aria2 wget curl python3-{dev,pip,venv} &>>$LOGFILE && sayok || die "Deps. install Failed"
+    apt-get install -y --no-install-recommends tcsh snapd nginx aria2 wget curl python3-{dev,pip,venv} &>>$LOGFILE && sayok || die "Deps. install Failed"
     snap install certbot --classic &>/dev/null &
-    
+
     cd $BWS
     $aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
-    
+
     echo -n "Installing Dependencies ... "
     apt-get install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
     libxslt1-dev libjpeg-dev libpq-dev cython3 gcc g++ make automake cmake autoconf \
     build-essential &>>$LOGFILE && sayok || die "can not install deps" 11
-    
+
     while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
     echo "Installing WKHTML2PDF ... "
     which wkhtmltopdf &>>$LOGFILE ||  apt-get -y install $BWS/wkhtml.deb &>>$LOGFILE
     which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777
-    
+
     rm /etc/nginx/sites-enabled/default
     cp /tmp/ngxcfg /etc/nginx/sites-available/$ODSVC
     ln -s /etc/nginx/sites-available/$ODSVC /etc/nginx/sites-enabled/
@@ -254,36 +253,36 @@ dnf_do(){
     echo $ID_LIKE $VERSION| grep centos | grep 8\. &>/dev/null \
         && echo "Configuring Centos" yum install bash-completion telnet dnf-plugins-core && yum config-manager --set-enabled powertools \
         && yum -y update && dnf -y module enable nodejs:16 &&  dnf -y module enable python39 \
-        && dnf -y install python39-{devel,pip,wheel} && dnf remove -y python3
+        && dnf -y install tcsh python39-{devel,pip,wheel} && dnf remove -y python3
 
     echo -n "Installing base tools ..."
     dnf install -y epel-release
-    dnf install -y nginx aria2 wget curl python3-{devel,pip} &>>$LOGFILE && sayok || die "Failed"
-    
+    dnf install -y nginx aria2 wget curl &>>$LOGFILE && sayok || die "Failed"
+
     cd $BWS
     $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
-    
+
     echo -n "Installing Dependencies ... "
     echo $ID_LIKE $VERSION| grep centos | grep 8\. &>/dev/null && pgdg_el8 || die "Postgres install Fialed" 
     dnf install -y libpq-devel sassc npm libxml2-devel libgsasl-devel openldap-devel \
     libxslt-devel libjpeg-devel gcc gcc-c++ make automake cmake autoconf \
     &>>$LOGFILE && sayok || die "can not install deps" 11
-    
+
     echo -n "Setting up postgres ..."
     systemctl status --no-pager postgres*  &>>$LOGFILE && sayok || \
     (  /usr/bin/postgresql*setup initdb &>>$LOGFILE &&  systemctl enable --now postgresql &>>$LOGFILE && sayok ) \
     || die "Postgres setup failed"
-    
+
     while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
     echo "Installing WKHTML2PDF ... "
     which wkhtmltopdf &>>$LOGFILE ||  dnf -y install $BWS/wkhtml.rpm &>>$LOGFILE
     which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777
-    
+
     rm -f /etc/nginx/conf.d/default
     sed -i -e "s,server_name.*,server_name xxx\;,g" /etc/nginx/nginx.conf
     sed -i -e "s,default_server,,g" /etc/nginx/nginx.conf
     cp /tmp/ngxcfg /etc/nginx/conf.d/${ODSVC}.conf
-    
+
 }
 
 which apt-get &>>$LOGFILE && apt_do
@@ -301,8 +300,8 @@ cd $ODIR || die "$ODIR"
 curl $REQ | grep -v ==\ \'win32 | sed "s,\#.*,,g" | sort | uniq >$RQF || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $AUSR ..."
-su -l postgres -c "psql -qtAc \"\\du\"" | grep $AUSR &>>$LOGFILE \
-&& sayok || (  su -l postgres -c "createuser -d $AUSR " &>>$LOGFILE && sayok ) || die "Postgres user creation failed"
+su -s /bin/tcsh -l postgres -c "psql -qtAc \"\\du\"" | grep $AUSR &>>$LOGFILE \
+&& sayok || (  su -s /bin/tcsh -l postgres -c "createuser -d $AUSR " &>>$LOGFILE && sayok ) || die "Postgres user creation failed"
 
 # install rtlcss requored for RTL support in Odoo
 echo -n "Installing rtlcss... "
@@ -314,7 +313,7 @@ echo "Creating start/stop scripts"
 echo "#!/bin/bash
 find $ODIR/ -type f -name \"*pyc\" -delete
 for prc in \$(ps aux | grep -v grep | grep -i \$(basename $ODIR) | grep python | awk '{print \$2}'); do kill -9 \$prc &>/dev/null; done
-cd $ODIR && source $BWS/bin/activate && ./odoo/odoo-bin -c $ODIR/Odoo.conf \$@
+cd $ODIR && source $BWS/bin/activate && ./odoo/odoo-bin --without-demo=all -c $ODIR/Odoo.conf \$@
 " > $ODIR/.start.sh && chmod +x $ODIR/.start.sh || die "can not create start script"
 
 
