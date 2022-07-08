@@ -321,7 +321,7 @@ echo "Creating odoo config file ..."
 cat <<EOF >$ODIR/Odoo.conf
 [options]
 addons_path = $ODIR/odoo/odoo/addons,$ODIR/odoo/addons,$ODIR/my_adds,$ODIR/my_adds/enterprise,$ODIR/my_adds/community
-admin_passwd = admin
+admin_passwd = 123@admin
 xmlrpc_port = ${PORT1}
 longpolling_port = ${PORT2}
 limit_time_cpu = 1800
