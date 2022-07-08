@@ -48,7 +48,7 @@ if [[ x$UV != x ]]; then
     [ $UV -eq 0 ] 2>&1 >/dev/null
     if [ $? -eq 2 ]; then
         die "Input is not a number, exiting ..." 33
-        elif (( $(echo "$UV > $OVER" | bc -l ) )); then
+        elif [[ $UV -gt $OVER ]]; then
         die "version $UV not released yet, exitting ..." 44
     else
         echo $UV | grep '.0' && export OVER=$(echo $UV | sed "s,\.0,,g") || export OVER=$UV
