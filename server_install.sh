@@ -84,11 +84,11 @@ export BWS=$(eval echo ~$AUSR)
     which apt-get &>/dev/null && export DIST=$(lsb_release -c | awk '{print $2}') \
     && echo $DISTS | grep -i $DIST &>>$LOGFILE || export DIST=bionic
     which apt-get &>/dev/null && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868" \
-    && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
+    && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.6-1.${DIST}_amd64.deb"
     
     # rpm based exports
     which dnf &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760867" \
-    && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
+    && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.6-1.centos8.x86_64.rpm"
 }
 
 { # Intro
@@ -101,7 +101,7 @@ export BWS=$(eval echo ~$AUSR)
         #-----------------------------------------------------------
         #  ${LRED}Caution: This script For development use only
         #         And should not used for production use.${LBLUE}
-        #  This should work on ${LGREEN}Ubuntu 18.04+, Debian 9+ & RHEL 8+ .${LBLUE}
+        #  This should work on ${LGREEN}Ubuntu 18.04+, Debian 9+ & RHEL 8.x .${LBLUE}
         #  You can set odoo version by calling ${NC}$0 \${VER}$LBLUE
         #  for ex. $NC# $0 14.0 ${LBLUE}to install odoo v 14.0
         #-----------------------------------------------------------
@@ -227,7 +227,7 @@ apt_do(){
     while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
     echo "Installing WKHTML2PDF ... "
     which wkhtmltopdf &>>$LOGFILE ||  apt-get -y install $BWS/wkhtml.deb &>>$LOGFILE
-    which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777
+    #which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777
 
     rm /etc/nginx/sites-enabled/default
     cp /tmp/ngxcfg /etc/nginx/sites-available/$ODSVC
