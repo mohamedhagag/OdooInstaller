@@ -217,7 +217,7 @@ apt_do(){
     snap install certbot --classic &>/dev/null &
 
     cd $BWS
-    $aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
+    $aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE #|| die "Download WKHTML2PDF failed" &
 
     echo -n "Installing Dependencies ... "
     apt-get install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
