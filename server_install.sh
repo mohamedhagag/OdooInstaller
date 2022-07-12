@@ -213,7 +213,7 @@ apt_do(){
     apt-get update &>>$LOGFILE
 
     echo -n "Installing base tools ..."
-    apt-get install -y --no-install-recommends tcsh snapd nginx aria2 wget curl python3-{dev,pip,venv} &>>$LOGFILE && sayok || die "Deps. install Failed"
+    apt-get install -y --no-install-recommends tcsh snapd nginx aria2 git wget curl python3-{dev,pip,venv} &>>$LOGFILE && sayok || die "Deps. install Failed"
     snap install certbot --classic &>/dev/null &
 
     cd $BWS
