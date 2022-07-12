@@ -67,7 +67,7 @@ export BWS=$(eval echo ~$AUSR)
     export aria2c='aria2c -c -x4 -s4'
     export OGH="https://github.com/odoo/odoo"
     export RQF=${ODIR}/odoo_requirements.txt
-    export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster"
+    export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster bullseye"
     
     ### Config vars
     export SFX=$OVER
