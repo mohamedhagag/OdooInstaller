@@ -84,11 +84,11 @@ export BWS=$(eval echo ~$AUSR)
     which apt-get &>/dev/null && export DIST=$(lsb_release -c | awk '{print $2}') \
     && echo $DISTS | grep -i $DIST &>>$LOGFILE || export DIST=bionic
     which apt-get &>/dev/null && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868" \
-    && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.6-1.${DIST}_amd64.deb"
+    && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
     
     # rpm based exports
     which dnf &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760867" \
-    && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.6-1.centos8.x86_64.rpm"
+    && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
 }
 
 { # Intro
