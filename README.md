@@ -18,6 +18,10 @@ wget https://raw.githubusercontent.com/mohamedhagag/OdooInstaller/master/server_
 
 
 # odoo_install.sh For Developers
+To install Run below command
+```
+wget https://raw.githubusercontent.com/mohamedhagag/OdooInstaller/master/odoo_install.sh && bash odoo_install.sh
+```
 
 Will allow you to install Odoo and VSCode in ~30 minutes in 1st run, then in 3 minutes on Debian, Ubuntu, Fedora, Mint
 
