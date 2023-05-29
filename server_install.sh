@@ -250,7 +250,7 @@ dnf_do(){
 	echo "INSTALLING GIT ...." && dnf -y install git
     echo $ID_LIKE $VERSION| grep centos | grep 8\. &>/dev/null \
         && echo "Configuring Centos" yum install bash-completion telnet dnf-plugins-core && yum config-manager --set-enabled powertools \
-        && yum -y update && dnf -y module enable nodejs:16 &&  dnf -y module enable python39 \
+        && dnf -y update && dnf -y module enable nodejs:16 &&  dnf -y module enable python39 && dnf -y module enable nginx:1.20 \
         && dnf -y install tcsh python39-{devel,pip,wheel} && dnf remove -y python3
 
     echo -n "Installing base tools ..."
