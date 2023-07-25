@@ -281,6 +281,8 @@ dnf_do(){
     sed -i -e "s,default_server,,g" /etc/nginx/nginx.conf
     cp /tmp/ngxcfg /etc/nginx/conf.d/${ODSVC}.conf
 
+    dnf -y install bash-completion sqlite htop screen nano
+
 }
 
 which apt-get &>>$LOGFILE && apt_do
