@@ -8,7 +8,7 @@ export DOM="example.com"
 export MONTH=$(date +%m)
 export YEAR=$(date +%y)
 export OVER=$(expr $YEAR - 6) #OdooVersion - computed
-[[ $MONTH -lt 11 ]] && export OVER=$(expr $OVER - 1) || export OVER=${OVER}
+[[ 1$MONTH -lt 111 ]] && export OVER=$(expr $OVER - 1) || export OVER=${OVER}
 
 
 { #Colors - ref: https://stackoverflow.com/a/5947802
