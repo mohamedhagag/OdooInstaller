@@ -116,6 +116,28 @@ export BWS=$(eval echo ~$AUSR)
     ${NC}" | tee -a $LOGFILE && read
 }
 
+
+export shmmax=$(expr $(free | grep Mem | awk '{print $2}') / 2)000
+export shmall=$(expr $shmmax / 4096)
+
+cat /etc/sysctl.conf | grep "kernel.shmmax = $shmmax" &>>$LOGFILE \
+|| echo "############ Odoo Postgress #########
+fs.inotify.max_user_watches = 524288
+fs.aio-max-nr = 1048576
+fs.file-max = 6815744
+kernel.shmall = $shmall
+kernel.shmmax = $shmmax
+kernel.shmmni = 4096
+kernel.sem = 250 32000 100 128
+net.ipv4.ip_local_port_range = 9000 65500
+net.core.rmem_default = 262144
+net.core.rmem_max = 4194304
+net.core.wmem_default = 262144
+net.core.wmem_max = 1048586
+" |  tee -a /etc/sysctl.conf &>>$LOGFILE;  sysctl -p &>>$LOGFILE
+
+
+
 cat <<EOF >/tmp/ngxcfg
 upstream ${ODSVC} {
         server 127.0.0.1:${PORT1};
@@ -356,26 +378,6 @@ do
     # || ( die "$LMSG library install error" )
     ls &>/dev/null # To avoid asking for passwd again
 done < $RQF
-
-
-export shmmax=$(expr $(free | grep Mem | awk '{print $2}') / 2)000
-export shmall=$(expr $shmmax / 4096)
-
-cat /etc/sysctl.conf | grep "kernel.shmmax = $shmmax" &>>$LOGFILE \
-|| echo "############ Odoo Postgress #########
-fs.inotify.max_user_watches = 524288
-fs.aio-max-nr = 1048576
-fs.file-max = 6815744
-kernel.shmall = $shmall
-kernel.shmmax = $shmmax
-kernel.shmmni = 4096
-kernel.sem = 250 32000 100 128
-net.ipv4.ip_local_port_range = 9000 65500
-net.core.rmem_default = 262144
-net.core.rmem_max = 4194304
-net.core.wmem_default = 262144
-net.core.wmem_max = 1048586
-" |  tee -a /etc/sysctl.conf &>>$LOGFILE;  sysctl -p &>>$LOGFILE
 
 cat <<EOF >/etc/systemd/system/${ODSVC}.service
 [Unit]
