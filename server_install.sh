@@ -285,7 +285,7 @@ dnf_do(){
     $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
 
     echo -n "Installing Dependencies ... "
-    echo $ID_LIKE $VERSION| grep rhel &>/dev/null && pgdg_el8 || die "Postgres install Fialed" 
+    echo $ID_LIKE $VERSION| grep rhel &>/dev/null && pgdg_el || die "Postgres install Fialed" 
     dnf -y install libpq5-devel || dnf -y install libpq-devel
     dnf install -y sassc npm libxml2-devel libgsasl-devel openldap-devel \
     libxslt-devel libjpeg-devel gcc gcc-c++ make automake cmake autoconf \
