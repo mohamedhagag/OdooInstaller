@@ -258,7 +258,7 @@ apt_do(){
 pgdg_el8(){
 cat /etc/passwd | grep postgres &>/dev/null \
 || (
-  dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
+  dnf install -y https://download.postgresql.org/pub/repos/dnf/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
   && dnf -qy module disable postgresql \
   && dnf install -y postgresql14-server \
   && /usr/pgsql-14/bin/postgresql-14-setup initdb \
@@ -271,7 +271,7 @@ dnf_do(){
     source /etc/os-release
 	echo "INSTALLING GIT ...." && dnf -y install git
     echo $ID_LIKE $VERSION| grep rhel &>/dev/null \
-        && echo "Configuring Centos" yum install bash-completion telnet dnf-plugins-core && yum config-manager --set-enabled powertools \
+        && echo "Configuring Centos" dnf install bash-completion telnet dnf-plugins-core && dnf config-manager --set-enabled powertools \
         && dnf -y update && dnf -y module enable nodejs:16 &&  dnf -y module enable python39 && dnf -y module enable nginx:1.20 \
         && dnf -y install tcsh python39-{devel,pip,wheel} && dnf remove -y python3
 
@@ -284,7 +284,8 @@ dnf_do(){
 
     echo -n "Installing Dependencies ... "
     echo $ID_LIKE $VERSION| grep rhel &>/dev/null && pgdg_el8 || die "Postgres install Fialed" 
-    dnf install -y libpq-devel sassc npm libxml2-devel libgsasl-devel openldap-devel \
+    dnf -y install libpq5-devel || dnf -y install libpq-devel
+    dnf install -y sassc npm libxml2-devel libgsasl-devel openldap-devel \
     libxslt-devel libjpeg-devel gcc gcc-c++ make automake cmake autoconf \
     &>>$LOGFILE && sayok || die "can not install deps" 11
 
