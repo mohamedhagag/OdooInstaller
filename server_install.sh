@@ -255,10 +255,12 @@ apt_do(){
     systemctl restart nginx &>/dev/null
 }
 
-pgdg_el8(){
+pgdg_el(){
+    export PGEL8="https://download.postgresql.org/pub/repos/dnf/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+    export PGEL9="https://download.postgresql.org/pub/repos/dnf/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
 cat /etc/passwd | grep postgres &>/dev/null \
 || (
-  dnf install -y https://download.postgresql.org/pub/repos/dnf/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
+  (dnf install -y $PGEL9 || dnf -y install $PGEL8) \
   && dnf -qy module disable postgresql \
   && dnf install -y postgresql14-server \
   && /usr/pgsql-14/bin/postgresql-14-setup initdb \
