@@ -233,7 +233,7 @@ apt_do(){
     apt-get update &>>$LOGFILE
 
     echo -n "Installing base tools ..."
-    apt-get install -y --no-install-recommends tcsh snapd nginx aria2 git wget curl python3-{dev,pip,venv} &>>$LOGFILE && sayok || die "Deps. install Failed"
+    apt-get install -y --no-install-recommends bash snapd nginx aria2 git wget curl python3-{dev,pip,venv} &>>$LOGFILE && sayok || die "Deps. install Failed"
     snap install certbot --classic &>/dev/null &
 
     cd $BWS
@@ -273,7 +273,7 @@ dnf_do(){
     echo $ID_LIKE $VERSION| grep rhel &>/dev/null \
         && echo "Configuring Centos" dnf install bash-completion telnet dnf-plugins-core && dnf config-manager --set-enabled powertools \
         && dnf -y update && dnf -y module enable nodejs:16 &&  dnf -y module enable python39 && dnf -y module enable nginx:1.20 \
-        && dnf -y install tcsh python39-{devel,pip,wheel} && dnf remove -y python3
+        && dnf -y install bash python39-{devel,pip,wheel} && dnf remove -y python3
 
     echo -n "Installing base tools ..."
     dnf install -y epel-release
@@ -323,8 +323,8 @@ cd $ODIR || die "$ODIR"
 curl $REQ | grep -v ==\ \'win32 | sed "s,\#.*,,g" | sort | uniq >$RQF || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $AUSR ..."
-su -s /bin/tcsh -l postgres -c "psql -qtAc \"\\du\"" | grep $AUSR &>>$LOGFILE \
-&& sayok || (  su -s /bin/tcsh -l postgres -c "createuser -d $AUSR " &>>$LOGFILE && sayok ) || die "Postgres user creation failed"
+su -s /bin/bash -l postgres -c "psql -qtAc \"\\du\"" | grep $AUSR &>>$LOGFILE \
+&& sayok || (  su -s /bin/bash -l postgres -c "createuser -d $AUSR " &>>$LOGFILE && sayok ) || die "Postgres user creation failed"
 
 # install rtlcss requored for RTL support in Odoo
 echo -n "Installing rtlcss... "
