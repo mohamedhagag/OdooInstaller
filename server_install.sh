@@ -256,8 +256,8 @@ apt_do(){
 }
 
 pgdg_el(){
-    export PGEL8="https://download.postgresql.org/pub/repos/dnf/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
-    export PGEL9="https://download.postgresql.org/pub/repos/dnf/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+    export PGEL8="https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+    export PGEL9="https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
 cat /etc/passwd | grep postgres &>/dev/null \
 || (
   (dnf install -y $PGEL9 || dnf -y install $PGEL8) \
