@@ -241,7 +241,7 @@ apt_do(){
 
     echo -n "Installing Dependencies ... "
     apt-get install -y postgresql sassc node-less npm libxml2-dev libsasl2-dev libldap2-dev \
-    libxslt1-dev libjpeg-dev libpq-dev cython3 gcc g++ make automake cmake autoconf \
+    libxslt1-dev libjpeg-dev libpq-dev cython3 gcc g++ make automake cmake autoconf tcsh \
     build-essential &>>$LOGFILE && sayok || die "can not install deps" 11
 
     while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
