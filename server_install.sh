@@ -306,7 +306,7 @@ dnf_do(){
     sed -i -e "s,default_server,,g" /etc/nginx/nginx.conf
     cp /tmp/ngxcfg /etc/nginx/conf.d/${ODSVC}.conf
 
-    dnf -y install bash-completion sqlite htop screen nano
+    dnf -y install bash-completion sqlite htop screen nano tcsh
 
 }
 
@@ -325,7 +325,6 @@ cd $ODIR || die "$ODIR"
 curl $REQ | grep -v ==\ \'win32 | sed "s,\#.*,,g" | sort | uniq >$RQF || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $AUSR ..."
-dnf -y install tcsh
 su -s /bin/tcsh -l postgres -c "psql -qtAc \"\\du\"" | grep $AUSR &>>$LOGFILE \
 && sayok || (  su -s /bin/tcsh -l postgres -c "createuser -d $AUSR " &>>$LOGFILE && sayok ) || die "Postgres user creation failed"
 
