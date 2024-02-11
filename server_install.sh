@@ -178,6 +178,11 @@ server {
     proxy_redirect off;
     proxy_buffering off;
 
+    location /websocket {
+        proxy_redirect off;
+        proxy_pass    http://${ODSVC}-im;
+    }
+
     location /longpolling {
         proxy_pass    http://${ODSVC}-im;
     }
