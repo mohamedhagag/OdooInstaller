@@ -278,16 +278,17 @@ dnf_do(){
         && dnf -y install bash python39-{devel,pip,wheel} && dnf remove -y python3
 
     echo -n "Installing base tools ..."
-    dnf install -y epel-release
-    dnf install -y nginx aria2 wget curl &>>$LOGFILE && sayok || die "Failed"
+    
+    which nginx &>>$LOGFILE || dnf install -y epel-release
+    which nginx &>>$LOGFILE || dnf install -y nginx aria2 wget curl &>>$LOGFILE && sayok || die "Failed"
 
     cd $BWS
-    $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
+    which wkhtmltopdf &>/dev/null || $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
 
     echo -n "Installing Dependencies ... "
     echo $ID_LIKE $VERSION| grep rhel &>/dev/null && pgdg_el || die "Postgres install Fialed" 
     dnf -y install libpq5-devel || dnf -y install libpq-devel
-    dnf install -y sassc npm libxml2-devel libgsasl-devel openldap-devel \
+    which npm &>>$LOGFILE || dnf install -y sassc npm libxml2-devel libgsasl-devel openldap-devel \
     libxslt-devel libjpeg-devel gcc gcc-c++ make automake cmake autoconf \
     &>>$LOGFILE && sayok || die "can not install deps" 11
 
