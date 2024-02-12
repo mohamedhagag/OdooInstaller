@@ -267,24 +267,29 @@ cat /etc/passwd | grep postgres &>/dev/null \
 || (
   (dnf install -y $PGEL9 || dnf -y install $PGEL8) \
   && dnf -qy module disable postgresql \
-  && dnf install -y postgresql14-server \
-  && /usr/pgsql-14/bin/postgresql-14-setup initdb \
-  && systemctl enable postgresql-14 \
-  && systemctl start postgresql-14
+  && dnf install -y postgresql16-server \
+  && /usr/pgsql-16/bin/postgresql-16-setup initdb \
+  && systemctl enable --now postgresql-16 \
+  && systemctl start postgresql-16
  )
 }
 
 dnf_do(){
+    setenforce 0
     source /etc/os-release
 	echo "INSTALLING GIT ...." && dnf -y install git
     echo $ID_LIKE $VERSION| grep rhel &>/dev/null \
-        && echo "Configuring Centos" dnf install bash-completion telnet dnf-plugins-core && dnf config-manager --set-enabled powertools \
-        && dnf -y update && dnf -y module enable nodejs:16 &&  dnf -y module enable python39 && dnf -y module enable nginx:1.20 \
-        && dnf -y install bash python39-{devel,pip,wheel} && dnf remove -y python3
+        && echo "Configuring OS" \
+        && (dnf config-manager --set-enabled powertools || echo -n ) \
+        && dnf -y update \
+        && dnf -y install bash-completion telnet dnf-plugins-core epel-release \
+        && (which node || dnf -y module enable nodejs:20 || dnf -y module enable nodejs:18) \
+        && (which nginx || dnf -y module enable nginx:1.22) \
+        && (which python3.11 || dnf -y install bash python3.11-{devel,pip,wheel,setuptools}) \
+        && (dnf remove -y python3 || echo -n) || die "OS Conf Failed"
 
     echo -n "Installing base tools ..."
     
-    which nginx &>>$LOGFILE || dnf install -y epel-release
     which nginx &>>$LOGFILE || dnf install -y nginx aria2 wget curl &>>$LOGFILE && sayok || die "Failed"
 
     cd $BWS
@@ -320,8 +325,12 @@ which apt-get &>>$LOGFILE && apt_do
 which dnf &>>$LOGFILE && dnf_do
 
 echo -n "Creating venv $BWS ... "
-which apt &>/dev/null && ( python3 -m venv $BWS || die "can not create VENV in $BWS" )
-which dnf &>/dev/null && ( python3.9 -m venv $BWS || die "can not create VENV in $BWS" )
+#which apt &>/dev/null && python3 -m venv $BWS || die "can not create VENV in $BWS" 
+#which dnf &>/dev/null && python3.11 -m venv $BWS || die "can not create VENV in $BWS" 
+
+/usr/bin/python3.11 -m venv $BWS || die "can not create VENV in $BWS" 
+source $BWS/bin/activate || die "VENV Failed"
+python3 -V | grep 11 || die "python 3.11 failed" ; sleep 3
 
 echo "Cloning odoo git $VER ... "
 cd $ODIR || die "$ODIR"
@@ -351,7 +360,7 @@ cd $ODIR && source $BWS/bin/activate && ./odoo/odoo-bin --without-demo=all -c $O
 echo "Creating odoo config file ..."
 cat <<EOF >$ODIR/Odoo.conf
 [options]
-addons_path = ~/odoo/odoo/addons,~/odoo/addons,~/my_adds,~/my_adds/community,~/my_adds/enterprise
+addons_path = $ODIR/odoo/odoo/addons,$ODIR/odoo/addons,$ODIR/my_adds,$ODIR/my_adds/community,$ODIR/my_adds/enterprise
 admin_passwd = 123@admin
 xmlrpc_port = ${PORT1}
 longpolling_port = ${PORT2}
@@ -375,7 +384,7 @@ ln -s /usr/lib64/libldap.so /usr/lib64/libldap_r.so &>/dev/null
 
 echo "Installing Python libraries:"
 source $BWS/bin/activate || die "VENV Failed"
-which python3; sleep 3
+python3 -V | grep 11 || die "python 3.11 failed" ; sleep 3
 
 python3 -m pip install --upgrade pip &>/dev/null
 
