@@ -1,22 +1,64 @@
 #!/bin/bash
-# you can set odoo version as 1st argument
-export VER=13.0		 # set odoo version - should work with any version after 11.0 - tested with 12 & 13
-[[ -n $1 ]] && export VER="$1" 
-### Config vars - you may change these - but defaults are good 
-export SFX=$(echo -n $VER | awk -F\. '{print $1}')	 # Odoo folder suffix version without ".0"
-[[ $SFX = 'master' ]] && export SFX=99
+# export PATH=$PATH:/snap/bin
+export O_LC=$LC_ALL
+export LC_ALL="C"
 export BWS="$HOME/workspace"		 # Base workspace folder default ~/workspace
-export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
-export PATH=$PATH:/snap/bin
 
-##################### Do Not make changes below this line #####################
-{ #exports
+export MONTH=$(date +%m)
+export YEAR=$(date +%y)
+export OVER=$(expr $YEAR - 6) #OdooVersion - computed
+[[ $MONTH -lt 11 ]] && export OVER=$(expr $OVER - 1) || export OVER=${OVER}
+
+read -p "Enter Odoo version you want to install (default $OVER),enter master for next version: " UV #UserVersion
+
+die(){ # Function to print an error and kill the script
+	export MSG=$1; export ERR=$2; 
+	echo -e "${LRED}Error: $MSG ${NC}" #error msg
+	echo -e "${LRED}
+	Something went wrong ...
+	Plz check the previous messages for errors
+	and try re-running the installation again.
+	You may delete $ODIR before restarting.
+	${NC}"
+	[[ -n $ERR ]] && exit $ERR || exit 9
+}
+
+# check UV is correct including .0 
+if [[ x$UV != x ]]; then
+	if echo $UV | grep -i master; then
+		export OVER=master
+	else
+		[ $UV -eq 0 ] 2>&1 >/dev/null
+		if [ $? -eq 2 ]; then
+			die "Input is not a number, exiting ..." 33
+		elif (( $(echo "$UV > $OVER" | bc -l ) )); then
+			die "version $UV not released yet, exitting ..." 44
+		else
+			export OVER=$UV
+		fi
+	fi
+fi
+
+[[ $OVER == "master" ]] && export SFX=99 || export SFX=$OVER
+[[ $OVER == "master" ]] && export VER=master || export VER=${OVER}.0
+
+### Config vars - you may change these - but defaults are good 
+[[ $SFX = 'master' ]] && export SFX=99
+export ODIR="$BWS/Odoo_$SFX"		 # Odoo dir name, default ~/workspace/Odoo13
+mkdir -p $ODIR
+read -p "Press Enter to ENABLE VSCode IDE installation for Odoo Development (Recommended) or Any letter to disable it: " IVSC
+[[ x$IVSC == x ]] && export IVSC=0 || export IVSC=1
+
+
+{ # Other exports
 	export LOGFILE="$HOME/OdooInstaller.log"
 	export aria2c='aria2c -c -x4 -s4'
 	export OGH="https://github.com/odoo/odoo"
-	export REQ="https://raw.githubusercontent.com/odoo/odoo/master/requirements.txt"
-	export RQF=$(mktemp)
+	export RQF=${ODIR}/odoo_requirements.txt
 	export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster"
+
+	# clean
+	rm -f $RQF $LOGFILE
 
 	# apt based exports
 	which apt-get &>/dev/null && export DIST=$(lsb_release -c | awk '{print $2}') \
@@ -56,23 +98,12 @@ export PATH=$PATH:/snap/bin
 	export NC='\033[0m' # No Color
 }
 
-die(){ # Function to print an error and kill the script
-	export MSG=$1; export ERR=$2; 
-	echo -e "${LRED}Error: $MSG ${NC}" #error msg
-	echo -e "${LRED}
-	Something went wrong ...
-	Plz check the previous messages for errors
-	and try re-running the installation again.
-	You may delete $ODIR before restarting.
-	${NC}"
-	[[ -n $ERR ]] && exit $ERR || exit 9
-}
 
 sayok(){ 
 	echo -e "${LGREEN} OK ${NC}" 
 }
 
-echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or master" 9999 # Check version arg
+echo $OVER | grep master &>/dev/null || echo $VER | grep ".0" || die "Version should have .0 like 12.0 not 12 or master" 9999 # Check version arg
 
 { # Intro
 	touch $LOGFILE
@@ -101,6 +132,9 @@ echo $VER | grep "master\|.0" || die "Version should have .0 like 12.0 not 12 or
 	Press Enter to continue or CTRL+C to exit :
 	${NC}" | tee -a $LOGFILE && read && sudo ls &>/dev/null
 }
+[[ $OVER == "master" ]] && export REQ="https://raw.githubusercontent.com/odoo/odoo/master/requirements.txt" \
+	|| export REQ="https://raw.githubusercontent.com/odoo/odoo/$VER/requirements.txt"
+
 while :; do sleep 10; sudo ls &>/dev/null; done & # to avoid asking for passwd again
 
 # create workspace dir
@@ -127,7 +161,7 @@ apt_do(){
 	sudo apt-get -y install python3-virtualenvwrapper &>>$LOGFILE
 
 	cd $BWS
-	$aria2c -o vscode.deb "$VSURL" &>>$LOGFILE || die "Download VSCode failed" &
+	[[ $IVSC ]] && $aria2c -o vscode.deb "$VSURL" &>>$LOGFILE || die "Download VSCode failed" &
 	$aria2c -o wkhtml.deb "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
 
 	echo -n "Installing Dependencies ... "
@@ -141,8 +175,7 @@ apt_do(){
 	which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777
 
 	while $(ps aux | grep code | grep aria2 &>/dev/null); do sleep 5; done
-	echo -n "Installing VSCode:"
-	which code &>/dev/null || sudo apt-get -y install ./vscode.deb &>>$LOGFILE && sayok || die "Can not install VSCode"
+	[[ $IVSC ]] && echo -n "Installing VSCode:" && ( which code &>/dev/null || sudo apt-get -y install ./vscode.deb &>>$LOGFILE && sayok || die "Can not install VSCode" )
 
 }
 
@@ -156,8 +189,8 @@ dnf_do(){
 	$aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
 
 	echo -n "Installing Dependencies ... "
-	sudo dnf install -y postgresql{,-server} sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
-	libxslt-devel libjpeg-turbo-devel libpq-devel gcc g++ make automake cmake autoconf \
+	sudo dnf install -y postgresql{,-server} libpq-devel sassc nodejs-less npm libxml2-devel libgsasl-devel openldap-devel \
+	libxslt-devel libjpeg-devel libpq-devel gcc g++ make automake cmake autoconf \
 	&>>$LOGFILE && sayok || die "can not install deps" 11
 
 	echo -n "Setting up postgres ..."
@@ -171,8 +204,7 @@ dnf_do(){
 	which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777 
 
 	while $(ps aux | grep code | grep aria2 &>/dev/null); do sleep 5; done
-	echo -n "Installing VSCode:"
-	which code &>/dev/null || sudo dnf -y install ./vscode.rpm &>>$LOGFILE && sayok || die "Can not install VSCode"
+	[[ $IVSC ]] && echo -n "Installing VSCode:" && ( which code &>/dev/null || sudo dnf -y install ./vscode.rpm &>>$LOGFILE && sayok || die "Can not install VSCode" )
 
 }
 
@@ -180,8 +212,10 @@ which apt-get &>>$LOGFILE && apt_do
 which dnf &>>$LOGFILE && dnf_do
 
 echo -n "Creating venv $ODIR ... "
-[[ -d $ODIR ]] || ( python3 -m virtualenv -p /usr/bin/python3 $ODIR &>>$LOGFILE && cd $ODIR && source $ODIR/bin/activate ) \
+[[ -d $ODIR ]] && cd $ODIR \
+	|| ( python3 -m virtualenv -p /usr/bin/python3 $ODIR &>>$LOGFILE && cd $ODIR && source $ODIR/bin/activate ) \
 		&& sayok || die "can not create venv" 33
+[[ -d ./bin ]] || python3 -m venv .
 
 
 echo "Cloning odoo git $VER ... "
@@ -189,7 +223,7 @@ cd $ODIR || die "$ODIR"
 [[ -d odoo ]] || git clone -b $VER --single-branch --depth=1 $OGH &>>$LOGFILE \
 	|| die "can not download odoo sources" 45 &
 
-curl $REQ > $RQF 2>/dev/null || die "can not get $REQ " 22
+curl $REQ | grep -v ==\ \'win32 | sed "s,\#.*,,g" | sort | uniq >$RQF || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $USER ..."
 sudo su -l postgres -c "psql -qtAc \"\\du\"" | grep $USER &>>$LOGFILE \
@@ -204,7 +238,7 @@ echo "Creating start/stop scripts"
 echo "#!/bin/bash
 find $ODIR/ -type f -name \"*pyc\" -delete
 for prc in \$(ps aux | grep -v grep | grep -i \$(basename $ODIR) | grep python | awk '{print \$2}'); do kill -9 \$prc &>/dev/null; done
-cd $ODIR && source bin/activate && ./odoo/odoo-bin -c ./Odoo_$SFX.conf \$@
+cd $ODIR && source bin/activate && ./odoo/odoo-bin -c ./Odoo.conf \$@
 " > $ODIR/.start.sh \
 	&& chmod u+x $ODIR/.start.sh \
 	&& cp $ODIR/.start.sh ~/bin/Odoo_Start_$SFX \
@@ -216,55 +250,48 @@ head -3 $ODIR/.start.sh > $ODIR/.stop.sh && chmod u+x $ODIR/.stop.sh \
 
 echo "Creating odoo config file ..."
 echo "[options]
-addons_path = ./odoo/odoo/addons,./odoo/addons,./my_adds
+addons_path = ./odoo/odoo/addons,./odoo/addons,./my_adds,./my_adds/enterprise,./my_adds/community
+admin_passwd = admin
 xmlrpc_port = 80$SFX
 longpolling_port = 70$SFX
 limit_time_cpu = 1800
 limit_time_real = 3600
-logfile = ./Odoo.log
 log_level = warn
-workers = 2
-dev = all
-"> $ODIR/Odoo_$SFX.conf && mkdir -p $ODIR/my_adds
+#workers = 2
+"> $ODIR/Odoo.conf && mkdir -p $ODIR/my_adds
 
-# change some python pkg versions
-sed -i -e "s,psycopg2.*,psycopg2,g" $RQF
-sed -i -e "s,num2words.*,num2words,g" $RQF
-sed -i -e "s,Werkzeug.*,Werkzeug<1.0.0,g" $RQF
-#sed -i -e "s,Babel.*,Babel,g" $RQF
-#sed -i -e "s,html2text.*,html2text,g" $RQF
-#sed -i -e "s,pytz.*,pytz,g" $RQF
-#sed -i -e "s,psutil.*,psutil,g" $RQF
-#sed -i -e "s,passlib.*,passlib,g" $RQF
-#sed -i -e "s,libsass.*,libsass,g" $RQF
-#sed -i -e "s,pillow.*,pillow,g" $RQF
-#sed -i -e "s,Pillow.*,Pillow,g" $RQF
-#sed -i -e "s,lxml.*,lxml,g" $RQF
-#sed -i -e "s,reportlab.*,reportlab,g" $RQF
+# sed -i -e "s,psycopg2.*,psycopg2-binary,g" $RQF
 echo phonenumbers >> $RQF
 echo pyaml >> $RQF
 echo pylint >> $RQF
+echo psycopg2-binary >> $RQF
 
 # link a folder to avoid an error in pip install lxml
 sudo ln -sf /usr/include/libxml2/libxml /usr/include/ &>>$LOGFILE
+# fix python-ldap build
+sudo ln -s /usr/lib64/libldap.so /usr/lib64/libldap_r.so &>/dev/null
 
 echo "Installing Python libraries:"
 cd $ODIR && source ./bin/activate
+which python3; sleep 3
+
+python3 -m pip install --upgrade pip &>/dev/null
 
 while read line 
 	do 
 		export LMSG=$(echo "$line" | awk '{print $1}')
 		echo -n " - Installing $LMSG : "
-		pip install "$line" &>>$LOGFILE && sayok \
-		|| ( die "$LMSG library install error" )
+		python3 -m pip install "$line" &>>$LOGFILE && sayok || echo Failed\? 
+		# || ( die "$LMSG library install error" )
 		sudo ls &>/dev/null # To avoid asking for passwd again
     done < $RQF
 
 
+vscup(){
 
-mkdir -p $ODIR/.vscode
+	mkdir -p $ODIR/.vscode
 
-echo '{
+	echo '{
     "version": "0.2.0",
     "configurations": [
         {
@@ -273,28 +300,28 @@ echo '{
             "cwd": "${workspaceFolder}",
             "request": "launch",
             "program": "${cwd}/odoo/odoo-bin",
-            "args": ["-c","${cwd}/Odoo_*.conf"],
+            "args": ["-c","${cwd}/Odoo.conf"],
             "env": {"GEVENT_SUPPORT":"True"},
             "console": "integratedTerminal"
         }
     ]
-}' >$ODIR/.vscode/launch.json
+	}' >$ODIR/.vscode/launch.json
 
-echo '{
-    "python.pythonPath": "${workspaceFolder}/bin/python"
-}'>$ODIR/.vscode/settings.json
+	echo '{
+			"python.defaultInterpreterPath": "${workspaceFolder}/bin/python"
+	}'>$ODIR/.vscode/settings.json
 
-echo '{
-	"folders": [
-		{
-			"path": ".."
-		}
-	]
-}'>$ODIR/.vscode/Odoo_${SFX}.code-workspace
+	echo '{
+		"folders": [
+			{
+				"path": ".."
+			}
+		]
+	}'>$ODIR/.vscode/Odoo_${SFX}.code-workspace
 
-echo "PYTHONPATH=$ODIR/odoo" >$ODIR/.env
+}
 
-psql -l | grep zt &>>$LOGFILE || ( createdb ztdb1 &>>$LOGFILE && createdb ztdb2 &>>$LOGFILE)
+[[ $IVSC ]] && vscup
 
 export shmmax=$(expr $(free | grep Mem | awk '{print $2}') / 2)000
 export shmall=$(expr $shmmax / 4096)
@@ -316,12 +343,12 @@ net.core.wmem_max = 1048586
 " | sudo tee -a /etc/sysctl.conf &>>$LOGFILE; sudo sysctl -p &>>$LOGFILE
 
 while $(ps aux | grep code | grep aria2 &>/dev/null); do sleep 5; done
-inst_vse &>>$LOGFILE
+[[ $IVSC ]] && inst_vse &>>$LOGFILE
 
 ps aux | grep git | grep odoo &>>$LOGFILE && echo "Waiting for git clone ..."
 while $(ps aux | grep git | grep odoo &>>$LOGFILE); do sleep 5; done
 
-code $ODIR/.vscode/Odoo_${SFX}.code-workspace
+[[ $IVSC ]] && code $ODIR/.vscode/Odoo_${SFX}.code-workspace
 
 [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] && env | grep VIRTUAL &>>$LOGFILE \
 && echo -e "${LGREEN}
@@ -331,8 +358,8 @@ code $ODIR/.vscode/Odoo_${SFX}.code-workspace
 #  - Have Odoo v$VER In $LRED $BWS/Odoo_$SFX $LGREEN
 #  - you can re/start odoo by running Odoo_Start_$SFX
 #  - stop odoo by running Odoo_Stop_$SFX
-#  - Odoo config file $ODIR/Odoo_$SFX.conf
-#  - VSCode should be installed & configured for Odoo Devs
+#  - Odoo config file $ODIR/Odoo.conf
+#  - If You enabled VSCode should be installed & configured 
 #  - Then access odoo on$LRED http://localhost:80$SFX $LGREEN
 #############################################################
 ${LBLUE}***For best results restart this PC now***$LGREEN
