@@ -280,9 +280,11 @@ dnf_do(){
 	echo "INSTALLING GIT ...." && dnf -y install git
     echo $ID_LIKE $VERSION| grep rhel &>/dev/null \
         && echo "Configuring OS" \
-        && (dnf config-manager --set-enabled powertools || echo -n ) \
+        && (dnf -y install yum-utils || echo -n) \
+        && (dnf config-manager --set-enabled powertools || dnf config-manager --set-enabled crb || echo -n ) \
         && dnf -y update \
         && dnf -y install bash-completion telnet dnf-plugins-core epel-release \
+        && (dnf -y install dnf install epel-next-release || echo -n) \
         && (which node || dnf -y module enable nodejs:20 || dnf -y module enable nodejs:18) \
         && (which nginx || dnf -y module enable nginx:1.22) \
         && (which python3.11 || dnf -y install bash python3.11-{devel,pip,wheel,setuptools}) \
