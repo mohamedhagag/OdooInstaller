@@ -278,7 +278,7 @@ dnf_do(){
     setenforce 0
     source /etc/os-release
 	echo "INSTALLING GIT ...." && dnf -y install git
-    echo $ID_LIKE $VERSION| grep rhel &>/dev/null \
+    echo $ID_LIKE | grep rhel &>/dev/null \
         && echo "Configuring OS" \
         && (dnf -y install yum-utils || echo -n) \
         && (dnf config-manager --set-enabled powertools || dnf config-manager --set-enabled crb || echo -n ) \
@@ -291,6 +291,8 @@ dnf_do(){
         && (dnf remove -y python3 || echo -n) || die "OS Conf Failed"
 
     echo -n "Installing base tools ..."
+    
+    echo $VERSION_ID | grep '9.' && export WKURL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox-0.12.6.1-2.almalinux9.x86_64.rpm"
     
     which nginx &>>$LOGFILE || dnf install -y nginx aria2 wget curl &>>$LOGFILE && sayok || die "Failed"
 
