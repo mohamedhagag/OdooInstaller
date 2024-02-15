@@ -342,7 +342,7 @@ cd $ODIR || die "$ODIR"
 curl $REQ | grep -v ==\ \'win32 | sed "s,\#.*,,g" | sort | uniq >$RQF || die "can not get $REQ " 22
 
 echo -n "Creating postgres user for $AUSR ..."
-su -s /bin/tcsh -l postgres -c "psql -qtAc \"\\du\"" | grep $AUSR &>>$LOGFILE \
+su -s /bin/tcsh -l postgres -c "psql -qtAc '\du'" | grep ^${AUSR}\| &>>$LOGFILE \
 && sayok || (  su -s /bin/tcsh -l postgres -c "createuser -d $AUSR " &>>$LOGFILE && sayok ) || die "Postgres user creation failed"
 
 # install rtlcss requored for RTL support in Odoo
