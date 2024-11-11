@@ -63,12 +63,12 @@ export BWS=$(eval echo ~$AUSR)
 { # Other exports
     export PORT1=1$(id -u $AUSR) #Port for multi install
     export PORT2=2$(id -u $AUSR) #IM Port for multi install
-    
+
     export aria2c='aria2c -c -x4 -s4'
     export OGH="https://github.com/odoo/odoo"
     export RQF=${ODIR}/odoo_requirements.txt
     export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster bullseye"
-    
+
     ### Config vars
     export SFX=$OVER
     export VER=${OVER}.0
@@ -76,16 +76,17 @@ export BWS=$(eval echo ~$AUSR)
     export LOGFILE="/$ODIR/Install.log"
     mkdir -p $ODIR
     export ODSVC=odoo-$PN$SFX
-    
+
     # clean
     rm -f $RQF $LOGFILE
-    
+
     # apt based exports
     which apt-get &>/dev/null && export DIST=$(lsb_release -c | awk '{print $2}') \
-    && echo $DISTS | grep -i $DIST &>>$LOGFILE || export DIST=bionic
+    && ( echo $DISTS | grep -i $DIST &>>$LOGFILE || die "Linux $DIST is not supported, supported debian bases are: $DISTS" )
     which apt-get &>/dev/null && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760868" \
-    && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
-    
+    && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb"
+    # && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.${DIST}_amd64.deb"
+
     # rpm based exports
     which dnf &>>$LOGFILE && export VSURL="https://go.microsoft.com/fwlink/?LinkID=760867" \
     && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
@@ -136,7 +137,16 @@ net.core.wmem_default = 262144
 net.core.wmem_max = 1048586
 " |  tee -a /etc/sysctl.conf &>>$LOGFILE;  sysctl -p &>>$LOGFILE
 
+cat /etc/security/limits.conf | grep ^* &>>$LOGFILE \
+|| cat <<EOF >>/etc/security/limits.conf 
 
+*           soft    nproc   304700
+*           hard    nproc   463848
+*           soft    nofile  524288
+*           hard    nofile  524288
+
+EOF
+ulimit -a &>>$LOGFILE
 
 cat <<EOF >/tmp/ngxcfg
 upstream ${ODSVC} {
@@ -147,7 +157,7 @@ upstream ${ODSVC}-im {
 }
 
 server {
-    server_name ${PN}.$DOM;
+    server_name ${AUSR}.$DOM;
 
     add_header Access-Control-Allow-Origin *;
 
@@ -171,7 +181,6 @@ server {
     proxy_set_header Host \$host;
     proxy_set_header X-Real-IP \$remote_addr;
     proxy_set_header X-Forward-For \$proxy_add_x_forwarded_for;
-    proxy_set_header Host \$http_x_forwarded_host;
     proxy_set_header X-Forwarded-Proto http;
     proxy_set_header X-Forwarded-Host \$host;
     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -263,48 +272,47 @@ apt_do(){
 pgdg_el(){
     export PGEL8="https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
     export PGEL9="https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
-cat /etc/passwd | grep postgres &>/dev/null \
-|| (
-  (dnf install -y $PGEL9 || dnf -y install $PGEL8) \
-  && dnf -qy module disable postgresql \
-  && dnf install -y postgresql16-server \
-  && /usr/pgsql-16/bin/postgresql-16-setup initdb \
-  && systemctl enable --now postgresql-16 \
-  && systemctl start postgresql-16
- )
+    cat /etc/passwd | grep postgres &>/dev/null \
+    || (
+        (dnf install -y $PGEL9 || dnf -y install $PGEL8) \
+        && dnf -qy module disable postgresql \
+        && dnf install -y postgresql16-server \
+        && /usr/pgsql-16/bin/postgresql-16-setup initdb \
+        && systemctl enable --now postgresql-16 \
+        && systemctl start postgresql-16
+    )
 }
 
 dnf_do(){
     setenforce 0
     source /etc/os-release
-	echo "INSTALLING GIT ...." && dnf -y install git
+    echo "INSTALLING GIT ...." && dnf -y install git &>>$LOGFILE
     echo $ID_LIKE | grep rhel &>/dev/null \
-        && echo "Configuring OS" \
-        && (dnf -y install yum-utils || echo -n) \
-        && (dnf config-manager --set-enabled powertools || dnf config-manager --set-enabled crb || echo -n ) \
-        && dnf -y update \
-        && dnf -y install bash-completion telnet dnf-plugins-core epel-release \
-        && (dnf -y install dnf install epel-next-release || echo -n) \
-        && (which node || dnf -y module enable nodejs:20 || dnf -y module enable nodejs:18) \
-        && (which nginx || dnf -y module enable nginx:1.22) \
-        && (which python3.11 || dnf -y install bash python3.11-{devel,pip,wheel,setuptools}) \
-        && (dnf remove -y python3 || echo -n) || die "OS Conf Failed"
+    && echo "Configuring OS" \
+    && (dnf -y install yum-utils &>>$LOGFILE || echo -n) \
+    && (dnf config-manager --set-enabled powertools &>>$LOGFILE || dnf config-manager --set-enabled crb &>>$LOGFILE || echo -n ) \
+    && dnf -y update &>>$LOGFILE \
+    && dnf -y install bash-completion telnet dnf-plugins-core epel-release &>>$LOGFILE \
+    && (dnf -y install dnf install epel-next-release &>>$LOGFILE || echo -n) \
+    && (which node || dnf -y module enable nodejs:20 &>>$LOGFILE || dnf -y module enable nodejs:18 &>>$LOGFILE) \
+    && (which nginx || dnf -y module enable nginx:1.22 &>>$LOGFILE) \
+    && (which python3.11 || dnf -y install bash python3.11-{devel,pip,wheel,setuptools} &>>$LOGFILE) \
+    && (dnf remove -y python3 &>>$LOGFILE || echo -n) || die "OS Conf Failed"
 
     echo -n "Installing base tools ..."
-    
-    echo $VERSION_ID | grep '9.' && export WKURL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox-0.12.6.1-2.almalinux9.x86_64.rpm"
-    
+
+
     which nginx &>>$LOGFILE || dnf install -y nginx aria2 wget curl &>>$LOGFILE && sayok || die "Failed"
 
     cd $BWS
-    which wkhtmltopdf &>/dev/null || $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
+    # which wkhtmltopdf &>/dev/null || $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
 
     echo -n "Installing Dependencies ... "
-    echo $ID_LIKE $VERSION| grep rhel &>/dev/null && pgdg_el || die "Postgres install Fialed" 
-    dnf -y install libpq5-devel || dnf -y install libpq-devel
+    echo $ID_LIKE $VERSION| grep rhel &>/dev/null && pgdg_el &>>$LOGFILE || die "Postgres install Fialed"
+    dnf -y install libpq5-devel &>>$LOGFILE || dnf -y install libpq-devel &>>$LOGFILE
     which npm &>>$LOGFILE || dnf install -y sassc npm libxml2-devel libgsasl-devel openldap-devel \
-    libxslt-devel libjpeg-devel gcc gcc-c++ make automake cmake autoconf \
-    &>>$LOGFILE && sayok || die "can not install deps" 11
+    libxslt-devel libjpeg-devel gcc gcc-c++ make automake cmake autoconf &>>$LOGFILE \
+    && sayok || die "can not install deps" 11
 
     echo -n "Setting up postgres ..."
     systemctl status --no-pager postgres*  &>>$LOGFILE && sayok || \
@@ -313,15 +321,20 @@ dnf_do(){
 
     while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
     echo "Installing WKHTML2PDF ... "
-    which wkhtmltopdf &>>$LOGFILE ||  dnf -y install $BWS/wkhtml.rpm &>>$LOGFILE
-    which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777
+    # echo $VERSION_ID | grep '9.' && export WKURL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox-0.12.6.1-2.almalinux9.x86_64.rpm"
+    export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
+
+    # which wkhtmltopdf &>>$LOGFILE ||  dnf -y install $BWS/wkhtml.rpm &>>$LOGFILE
+    dnf -y install compat-openssl11 &>>$LOGFILE
+    wkhtmltopdf -V | grep "12" | grep -i "patch" &>>$LOGFILE || dnf -y install $WKURL &>>$LOGFILE
+    # which wkhtmltopdf &>>$LOGFILE || die "can not install wkhtml2pdf" 777
 
     rm -f /etc/nginx/conf.d/default
     sed -i -e "s,server_name.*,server_name xxx\;,g" /etc/nginx/nginx.conf
     sed -i -e "s,default_server,,g" /etc/nginx/nginx.conf
     cp /tmp/ngxcfg /etc/nginx/conf.d/${ODSVC}.conf
 
-    dnf -y install bash-completion sqlite htop screen nano tcsh
+    dnf -y install bash-completion sqlite htop screen nano tcsh &>>$LOGFILE
 
 }
 
@@ -329,12 +342,12 @@ which apt-get &>>$LOGFILE && apt_do
 which dnf &>>$LOGFILE && dnf_do
 
 echo -n "Creating venv $BWS ... "
-#which apt &>/dev/null && python3 -m venv $BWS || die "can not create VENV in $BWS" 
-#which dnf &>/dev/null && python3.11 -m venv $BWS || die "can not create VENV in $BWS" 
+#which apt &>/dev/null && python3 -m venv $BWS || die "can not create VENV in $BWS"
+#which dnf &>/dev/null && python3.11 -m venv $BWS || die "can not create VENV in $BWS"
 
-/usr/bin/python3.11 -m venv $BWS || die "can not create VENV in $BWS" 
+/usr/bin/python3 -m venv $BWS || die "can not create VENV in $BWS"
 source $BWS/bin/activate || die "VENV Failed"
-python3 -V | grep 11 || die "python 3.11 failed" ; sleep 3
+# python3 -V | grep 11 || die "python 3.11 failed" ; sleep 3
 
 echo "Cloning odoo git $VER ... "
 cd $ODIR || die "$ODIR"
@@ -364,7 +377,7 @@ cd $ODIR && source $BWS/bin/activate && ./odoo/odoo-bin --without-demo=all -c $O
 echo "Creating odoo config file ..."
 cat <<EOF >$ODIR/Odoo.conf
 [options]
-addons_path = $ODIR/odoo/odoo/addons,$ODIR/odoo/addons,$ODIR/my_adds,$ODIR/my_adds/community,$ODIR/my_adds/enterprise
+addons_path = ~/odoo/odoo/addons,~/odoo/addons,~/my_adds/${PN}${$VER},~/my_adds/community,~/my_adds/enterprise
 admin_passwd = 123@admin
 xmlrpc_port = ${PORT1}
 longpolling_port = ${PORT2}
@@ -388,7 +401,7 @@ ln -s /usr/lib64/libldap.so /usr/lib64/libldap_r.so &>/dev/null
 
 echo "Installing Python libraries:"
 source $BWS/bin/activate || die "VENV Failed"
-python3 -V | grep 11 || die "python 3.11 failed" ; sleep 3
+# python3 -V | grep 11 || die "python 3.11 failed" ; sleep 3
 
 python3 -m pip install --upgrade pip &>/dev/null
 
@@ -408,7 +421,7 @@ After=network.target
 
 [Service]
 Restart=always
-RestartSec=5
+RestartSec=1
 User=$AUSR
 Group=$AUSR
 ExecStart=$ODIR/.start.sh
@@ -425,12 +438,11 @@ source $BWS/bin/activate; pip freeze | grep psycopg2 &>/dev/null || \
 (echo "Installing psycopg2" && pip3 install psycopg2-binary &>/dev/null)
 
 chown -R $AUSR: ~$BWS &>/dev/null
-systemctl daemon-reload && systemctl enable --now $ODSVC && systemctl restart nginx
+systemctl daemon-reload; systemctl enable --now nginx; systemctl enable --now $ODSVC 
 
 ps aux | grep git | grep odoo &>>$LOGFILE && echo "Waiting for git clone ..."
 while $(ps aux | grep git | grep clone | grep odoo &>>$LOGFILE); do sleep 5; done
 which dnf && dnf -y remove python3 &>/dev/null
-
 
 chown -R $AUSR: $BWS && source $BWS/bin/activate && [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] &>>$LOGFILE \
 && echo -e "${LGREEN}
@@ -438,13 +450,13 @@ chown -R $AUSR: $BWS && source $BWS/bin/activate && [[ -d $ODIR ]] && [[ -f $ODI
 #  Looks like everything went well.
 #  You should now:
 #  - Have Odoo v$VER In $LRED $ODIR $LGREEN
-#  - To re/start odoo run systemctl restart $ODSCV
-#  - To re/start odoo run systemctl stop $ODSCV
+#  - To re/start odoo run $LRED systemctl restart $ODSCV $LGREEN
+#  - To re/start odoo run $LRED systemctl stop $ODSCV $LGREEN
 #  - Odoo config file $ODIR/Odoo.conf
-#  - Odoo addons dirs $ODIR/my_adds for project addons
-#  - $ODIR/my_adds/community for 3rd party addons
-#  - $ODIR/my_adds/enterprise for EE addons
-#  - Then access odoo on domain if DNS configured $LRED http://${PN}.${DOM} $LGREEN
+#  - Odoo addons dirs $ODIR/my_adds/${AUSR} for project addons
+#  - $ODIR/my_adds/community use it for 3rd party addons
+#  - $ODIR/my_adds/enterprise use it for EE addons
+#  - Then access odoo on domain if DNS configured $LRED http://${AUSR}.${DOM} $LGREEN
 #  - or using IP:PORT $LRED http://$(curl http://ifconfig.me):$PORT1 $LGREEN
 #############################################################
 ${LBLUE}***For best results restart this Server now***$LGREEN
