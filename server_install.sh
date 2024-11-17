@@ -377,7 +377,7 @@ cd $ODIR && source $BWS/bin/activate && ./odoo/odoo-bin --without-demo=all -c $O
 echo "Creating odoo config file ..."
 cat <<EOF >$ODIR/Odoo.conf
 [options]
-addons_path = ~/odoo/odoo/addons,~/odoo/addons,~/my_adds/${PN}${$VER},~/my_adds/community,~/my_adds/enterprise
+addons_path = ~/odoo/odoo/addons,~/odoo/addons,~/my_adds/${AUSR},~/my_adds/community,~/my_adds/enterprise
 admin_passwd = 123@admin
 xmlrpc_port = ${PORT1}
 longpolling_port = ${PORT2}
