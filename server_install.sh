@@ -345,7 +345,7 @@ echo -n "Creating venv $BWS ... "
 #which apt &>/dev/null && python3 -m venv $BWS || die "can not create VENV in $BWS"
 #which dnf &>/dev/null && python3.11 -m venv $BWS || die "can not create VENV in $BWS"
 
-/usr/bin/python3 -m venv $BWS || die "can not create VENV in $BWS"
+/usr/bin/python3.12 -m venv $BWS || /usr/bin/python3.11 -m venv $BWS || die "can not create VENV in $BWS"
 source $BWS/bin/activate || die "VENV Failed"
 # python3 -V | grep 11 || die "python 3.11 failed" ; sleep 3
 
