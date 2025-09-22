@@ -100,7 +100,7 @@ export BWS=$(eval echo ~$AUSR)
         #  ${LGREEN}Mohamed M. Hagag https://linkedin.com/in/mohamedhagag${LBLUE}
         #  released under GPL3 License
         #-----------------------------------------------------------
-        #  This should work on ${LGREEN}Ubuntu 18.04+, Debian 9+ & RHEL 8.x .${LBLUE}
+        #  This should work on ${LGREEN}Ubuntu 18.04+, Debian 9+ & RHEL 8+ .${LBLUE}
         #  You can set odoo version by calling ${NC}$0 \${VER}$LBLUE
         #  for ex. $NC# $0 14.0 ${LBLUE}to install odoo v 14.0
         #-----------------------------------------------------------
@@ -272,14 +272,15 @@ apt_do(){
 pgdg_el(){
     export PGEL8="https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
     export PGEL9="https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+    export PGEL10="https://download.postgresql.org/pub/repos/yum/reporpms/EL-10-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
     cat /etc/passwd | grep postgres &>/dev/null \
     || (
-        (dnf install -y $PGEL9 || dnf -y install $PGEL8) \
-        && dnf -qy module disable postgresql \
-        && dnf install -y postgresql16-server \
-        && /usr/pgsql-16/bin/postgresql-16-setup initdb \
-        && systemctl enable --now postgresql-16 \
-        && systemctl start postgresql-16
+        (dnf install -y $PGEL10 || dnf -y install $PGEL9 || dnf -y install $PGEL8) \
+        && (dnf -qy module disable postgresql || echo -n) \
+        && dnf install -y postgresql17-server \
+        && /usr/pgsql-17/bin/postgresql-17-setup initdb \
+        && systemctl enable --now postgresql-17 \
+        && systemctl start postgresql-17
     )
 }
 
@@ -287,20 +288,28 @@ dnf_do(){
     setenforce 0
     source /etc/os-release
     echo "INSTALLING GIT ...." && dnf -y install git &>>$LOGFILE
-    echo $ID_LIKE | grep rhel &>/dev/null \
-    && echo "Configuring OS" \
-    && (dnf -y install yum-utils &>>$LOGFILE || echo -n) \
-    && (dnf config-manager --set-enabled powertools &>>$LOGFILE || dnf config-manager --set-enabled crb &>>$LOGFILE || echo -n ) \
-    && dnf -y update &>>$LOGFILE \
-    && dnf -y install bash-completion telnet dnf-plugins-core epel-release &>>$LOGFILE \
-    && (dnf -y install dnf install epel-next-release &>>$LOGFILE || echo -n) \
-    && (which node || dnf -y module enable nodejs:20 &>>$LOGFILE || dnf -y module enable nodejs:18 &>>$LOGFILE) \
-    && (which nginx || dnf -y module enable nginx:1.22 &>>$LOGFILE) \
-    && (which python3.11 || dnf -y install bash python3.11-{devel,pip,wheel,setuptools} &>>$LOGFILE) \
-    && (dnf remove -y python3 &>>$LOGFILE || echo -n) || die "OS Conf Failed"
+        echo $ID_LIKE | grep rhel &>/dev/null \
+        && echo "Configuring OS" \
+        && (dnf -y install yum-utils &>>$LOGFILE || echo -n) \
+        && (dnf config-manager --set-enabled powertools &>>$LOGFILE || dnf config-manager --set-enabled crb &>>$LOGFILE || echo -n ) \
+        && dnf -y update &>>$LOGFILE \
+        && dnf -y install bash-completion telnet dnf-plugins-core epel-release &>>$LOGFILE 
+    el9_do(){
+        (dnf -y install dnf install epel-next-release &>>$LOGFILE || echo -n) \
+        && (which node || dnf -y module enable nodejs:20 &>>$LOGFILE || dnf -y module enable nodejs:18 &>>$LOGFILE) \
+        && (which nginx || dnf -y module enable nginx:1.22 &>>$LOGFILE) \
+        && (which python3.11 || dnf -y install bash python3.11-{devel,pip,wheel,setuptools} &>>$LOGFILE) \
+        && (dnf remove -y python3 &>>$LOGFILE || echo -n) || die "OS Conf Failed"
+    }
+
+    el10_do(){
+        echo
+        #TODO: add el10 support
+    }
+
+    echo $VERSION_ID | grep '^10' &>/dev/null && el10_do || el9_do
 
     echo -n "Installing base tools ..."
-
 
     which nginx &>>$LOGFILE || dnf install -y nginx aria2 wget curl &>>$LOGFILE && sayok || die "Failed"
 
@@ -310,8 +319,8 @@ dnf_do(){
     echo -n "Installing Dependencies ... "
     echo $ID_LIKE $VERSION| grep rhel &>/dev/null && pgdg_el &>>$LOGFILE || die "Postgres install Fialed"
     dnf -y install libpq5-devel &>>$LOGFILE || dnf -y install libpq-devel &>>$LOGFILE
-    which npm &>>$LOGFILE || dnf install -y sassc npm libxml2-devel libgsasl-devel openldap-devel \
-    libxslt-devel libjpeg-devel gcc gcc-c++ make automake cmake autoconf &>>$LOGFILE \
+    which npm &>>$LOGFILE || for pkg in sassc npm libxml2-devel libgsasl-devel openldap-devel \
+    libxslt-devel libjpeg-devel gcc gcc-c++ make automake cmake autoconf; do dnf install -y $pkg || echo ">>>>>> $pkg install Failed"; done &>>$LOGFILE \
     && sayok || die "can not install deps" 11
 
     echo -n "Setting up postgres ..."
@@ -321,8 +330,9 @@ dnf_do(){
 
     while $(ps aux | grep wkhtml | grep aria2 &>/dev/null); do sleep 5; done
     echo "Installing WKHTML2PDF ... "
-    # echo $VERSION_ID | grep '9.' && export WKURL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox-0.12.6.1-2.almalinux9.x86_64.rpm"
-    export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
+    echo $VERSION_ID | grep '10.' && export WKURL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox-0.12.6.1-2.almalinux9.x86_64.rpm"
+    echo $VERSION_ID | grep '9.' && export WKURL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox-0.12.6.1-2.almalinux9.x86_64.rpm"
+    echo $VERSION_ID | grep '8.' && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
 
     # which wkhtmltopdf &>>$LOGFILE ||  dnf -y install $BWS/wkhtml.rpm &>>$LOGFILE
     dnf -y install compat-openssl11 &>>$LOGFILE
