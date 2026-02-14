@@ -344,7 +344,7 @@ dnf_do(){
     sed -i -e "s,default_server,,g" /etc/nginx/nginx.conf
     cp /tmp/ngxcfg /etc/nginx/conf.d/${ODSVC}.conf
 
-    dnf -y install bash-completion sqlite htop screen nano tcsh &>>$LOGFILE
+    dnf -y install bash-completion sqlite htop screen nano tcsh openldap-devel python-devel &>>$LOGFILE
 
 }
 
