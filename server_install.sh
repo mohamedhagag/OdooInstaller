@@ -67,7 +67,7 @@ export BWS=$(eval echo ~$AUSR)
     export aria2c='aria2c -c -x4 -s4'
     export OGH="https://github.com/odoo/odoo"
     export RQF=${ODIR}/odoo_requirements.txt
-    export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster bullseye"
+    export DISTS="Ubuntu: xenial bionic focal, Debian: stretch buster bullseye Trixie"
 
     ### Config vars
     export SFX=$OVER
@@ -75,7 +75,7 @@ export BWS=$(eval echo ~$AUSR)
     export ODIR="$BWS/Odoo"             # Odoo dir name
     export LOGFILE="/$ODIR/Install.log"
     mkdir -p $ODIR
-    export ODSVC=odoo-$PN$SFX
+    export ODSVC=odoo-$AUSR
 
     # clean
     rm -f $RQF $LOGFILE
@@ -294,16 +294,19 @@ dnf_do(){
         && (dnf config-manager --set-enabled powertools &>>$LOGFILE || dnf config-manager --set-enabled crb &>>$LOGFILE || echo -n ) \
         && dnf -y update &>>$LOGFILE \
         && dnf -y install bash-completion telnet dnf-plugins-core epel-release &>>$LOGFILE 
+        
     el9_do(){
         (dnf -y install dnf install epel-next-release &>>$LOGFILE || echo -n) \
         && (which node || dnf -y module enable nodejs:20 &>>$LOGFILE || dnf -y module enable nodejs:18 &>>$LOGFILE) \
         && (which nginx || dnf -y module enable nginx:1.22 &>>$LOGFILE) \
-        && (which python3.11 || dnf -y install bash python3.11-{devel,pip,wheel,setuptools} &>>$LOGFILE) \
+        && (which pip3.11 || dnf -y install bash python3.11-{devel,pip,wheel,setuptools} &>>$LOGFILE) \
         && (dnf remove -y python3 &>>$LOGFILE || echo -n) || die "OS Conf Failed"
     }
 
     el10_do(){
-        echo
+        (dnf -y install dnf install epel-release &>>$LOGFILE || echo -n) \
+        && (which pip3 || dnf -y install bash python3-{devel,pip,wheel,setuptools} &>>$LOGFILE) \
+        || die "OS Conf Failed"
         #TODO: add el10 support
     }
 
@@ -314,7 +317,6 @@ dnf_do(){
     which nginx &>>$LOGFILE || dnf install -y nginx aria2 wget curl &>>$LOGFILE && sayok || die "Failed"
 
     cd $BWS
-    # which wkhtmltopdf &>/dev/null || $aria2c -o wkhtml.rpm "$WKURL" &>>$LOGFILE || die "Download WKHTML2PDF failed" &
 
     echo -n "Installing Dependencies ... "
     echo $ID_LIKE $VERSION| grep rhel &>/dev/null && pgdg_el &>>$LOGFILE || die "Postgres install Fialed"
@@ -352,12 +354,11 @@ which apt-get &>>$LOGFILE && apt_do
 which dnf &>>$LOGFILE && dnf_do
 
 echo -n "Creating venv $BWS ... "
-#which apt &>/dev/null && python3 -m venv $BWS || die "can not create VENV in $BWS"
-#which dnf &>/dev/null && python3.11 -m venv $BWS || die "can not create VENV in $BWS"
+python3 -c "import sys; exit(0 if sys.version_info >= (3, 11) else 1)" && echo "Python Version is $(python -V)" || die "Version is less than 3.11"
 
-/usr/bin/python3.12 -m venv $BWS || /usr/bin/python3.11 -m venv $BWS || die "can not create VENV in $BWS"
+/usr/bin/python3 -m venv $BWS || die "can not create VENV in $BWS"
+
 source $BWS/bin/activate || die "VENV Failed"
-# python3 -V | grep 11 || die "python 3.11 failed" ; sleep 3
 
 echo "Cloning odoo git $VER ... "
 cd $ODIR || die "$ODIR"
