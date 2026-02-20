@@ -354,7 +354,7 @@ which apt-get &>>$LOGFILE && apt_do
 which dnf &>>$LOGFILE && dnf_do
 
 echo -n "Creating venv $BWS ... "
-python3 -c "import sys; exit(0 if sys.version_info >= (3, 11) else 1)" && echo "Python Version is $(python -V)" || die "Version is less than 3.11"
+python3 -c "import sys; exit(0 if sys.version_info >= (3, 11) else 1)" && echo "Python Version is $(python3 -V)" || die "Version is less than 3.11"
 
 /usr/bin/python3 -m venv $BWS || die "can not create VENV in $BWS"
 
@@ -413,7 +413,6 @@ ln -s /usr/lib64/libldap.so /usr/lib64/libldap_r.so &>/dev/null
 
 echo "Installing Python libraries:"
 source $BWS/bin/activate || die "VENV Failed"
-# python3 -V | grep 11 || die "python 3.11 failed" ; sleep 3
 
 python3 -m pip install --upgrade pip &>/dev/null
 
