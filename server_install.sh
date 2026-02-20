@@ -285,6 +285,7 @@ pgdg_el(){
 
 dnf_do(){
     setenforce 0
+    sed -i -e "s,=enforcing,=permissive,g" /etc/selinux/config
     source /etc/os-release
     echo "INSTALLING GIT ...." && dnf -y install git &>>$LOGFILE
         echo $ID_LIKE | grep rhel &>/dev/null \
