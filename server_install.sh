@@ -92,10 +92,10 @@ export BWS=$(eval echo ~$AUSR)
     && export WKURL="https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox-0.12.5-1.centos8.x86_64.rpm"
 }
 
-{ # Intro
+info_msg() { # Intro
     touch $LOGFILE
     echo -e "${LBLUE}
-        #############################################################
+        #####################################################################################
         #  Welcome to Odoo installer script by
         #  ${LGREEN}Mohamed M. Hagag https://linkedin.com/in/mohamedhagag${LBLUE}
         #  released under GPL3 License
@@ -104,19 +104,18 @@ export BWS=$(eval echo ~$AUSR)
         #  You can set odoo version by calling ${NC}$0 \${VER}$LBLUE
         #  for ex. $NC# $0 14.0 ${LBLUE}to install odoo v 14.0
         #-----------------------------------------------------------
-        #  Now we will install Odoo v.${LRED} $VER $LBLUE
-        #  In$LGREEN $ODIR $LBLUE
+        #  Odoo v.${LRED} $VER $LBLUE In$LGREEN $ODIR $LBLUE
         #  On success:
-        #  - you can re/start odoo by running systemctl start $ODSVC
-        #  - stop odoo by systemctl stop $ODSVC
+        #  - you can re/start odoo by running $LRED systemctl start $ODSVC $LBLUE
         #  - Odoo config file $LGREEN $ODIR/Odoo.conf $LBLUE
         #  - Odoo  will be running on$LRED http://localhost:$PORT1 $LBLUE
-        ############################################################
-
-        Press Enter to continue or CTRL+C to exit :
-    ${NC}" | tee -a $LOGFILE && read
+        #####################################################################################
+    "
 }
 
+echo -e "
+    Press Enter to continue or CTRL+C to exit :
+    ${NC}" | tee -a $LOGFILE && read
 
 export shmmax=$(expr $(free | grep Mem | awk '{print $2}') / 2)000
 export shmall=$(expr $shmmax / 4096)
@@ -421,7 +420,6 @@ do
     export LMSG=$(echo "$line" | awk '{print $1}')
     echo -n " - Installing $LMSG : "
     python3 -m pip install "$line" &>>$LOGFILE && sayok || echo Failed\?
-    # || ( die "$LMSG library install error" )
     ls &>/dev/null # To avoid asking for passwd again
 done < $RQF
 
@@ -456,20 +454,8 @@ while $(ps aux | grep git | grep clone | grep odoo &>>$LOGFILE); do sleep 5; don
 which dnf && dnf -y remove python3 &>/dev/null
 
 chown -R $AUSR: $BWS && source $BWS/bin/activate && [[ -d $ODIR ]] && [[ -f $ODIR/odoo/odoo-bin ]] &>>$LOGFILE \
-&& echo -e "${LGREEN}
-#############################################################
-#  Looks like everything went well.
-#  You should now:
-#  - Have Odoo v$VER In $LRED $ODIR $LGREEN
-#  - To re/start odoo run $LRED systemctl restart $ODSCV $LGREEN
-#  - To re/start odoo run $LRED systemctl stop $ODSCV $LGREEN
-#  - Odoo config file $ODIR/Odoo.conf
-#  - Odoo addons dirs $ODIR/my_adds/${AUSR} for project addons
-#  - $ODIR/my_adds/community use it for 3rd party addons
-#  - $ODIR/my_adds/enterprise use it for EE addons
-#  - Then access odoo on domain if DNS configured $LRED http://${AUSR}.${DOM} $LGREEN
-#  - or using IP:PORT $LRED http://$(curl http://ifconfig.me):$PORT1 $LGREEN
-#############################################################
+&& info_msg && \
+echo -e "
 ${LBLUE}***For best results restart this Server now***$LGREEN
 Good luck, ;) .
 ${NC}" || die "Installation Failed" 1010
