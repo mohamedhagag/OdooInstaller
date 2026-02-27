@@ -113,6 +113,7 @@ info_msg() { # Intro
     "
 }
 
+info_msg
 echo -e "
     Press Enter to continue or CTRL+C to exit :
     ${NC}" | tee -a $LOGFILE && read
