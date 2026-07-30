@@ -387,7 +387,9 @@ cd $ODIR && source $BWS/bin/activate && ./odoo/odoo-bin --without-demo=all -c $O
 
 
 echo "Creating odoo config file ..."
-cat <<EOF >$ODIR/Odoo.conf
+
+
+[[ $OVER -lt 19 ]] && cat <<EOF >$ODIR/Odoo.conf
 [options]
 addons_path = ${ODIR}/odoo/odoo/addons,${ODIR}/odoo/addons,${ODIR}/my_adds/${AUSR},${ODIR}/my_adds/community,${ODIR}/my_adds/enterprise
 admin_passwd = 123@admin
@@ -398,6 +400,19 @@ limit_time_real = 3600
 log_level = warn
 workers = 4
 EOF
+
+[[ $OVER -gt 18 ]] && cat <<EOF >$ODIR/Odoo.conf
+[options]
+addons_path = ${ODIR}/odoo/odoo/addons,${ODIR}/odoo/addons,${ODIR}/my_adds/${AUSR},${ODIR}/my_adds/community,${ODIR}/my_adds/enterprise
+admin_passwd = 123@admin
+http_port = ${PORT1}
+gevent_port = ${PORT2}
+limit_time_cpu = 1800
+limit_time_real = 3600
+log_level = warn
+workers = 4
+EOF
+
 
 mkdir -p $ODIR/my_adds/{enterprise,community}
 mkdir -p $ODIR/my_adds/${AUSR}
